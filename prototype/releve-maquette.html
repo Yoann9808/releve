@@ -1,0 +1,652 @@
+<title>Relève</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: fixed left rail (desktop) / bottom bar (phone); one working view at a time; summary before detail. */
+:root{
+  --bg:#EEEDE8;        /* stone paper */
+  --surface:#FFFFFF;
+  --surface-2:#F6F5F1;
+  --line:#D8D6CE;
+  --line-strong:#B9B6AB;
+  --fg:#1C2126;
+  --fg-2:#4A5059;
+  --fg-3:#767C85;
+  --ink:#163F36;       /* bottle green, primary */
+  --ink-2:#1F5547;
+  --ink-soft:#E3ECE8;
+  --brass:#8C6A1F;     /* value highlight, used once per screen */
+  --brass-soft:#F3EBD6;
+  --good:#2F7A4F; --good-soft:#E2F0E7;
+  --warn:#9A6A12; --warn-soft:#F6EBD2;
+  --crit:#A3392F; --crit-soft:#F6E0DD;
+  --font-display:"Literata",Georgia,"Times New Roman",serif;
+  --font-body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+  --radius:6px;
+  --shadow:0 1px 2px rgba(28,33,38,.06),0 6px 18px rgba(28,33,38,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15191C;--surface:#1E2327;--surface-2:#242A2F;--line:#30373D;--line-strong:#465058;
+  --fg:#EDEBE4;--fg-2:#B8BCC2;--fg-3:#868C94;--ink:#7FBFA6;--ink-2:#9ACFBA;--ink-soft:#1F3A32;
+  --brass:#D4AE55;--brass-soft:#3A3120;--good:#7CC496;--good-soft:#213A2B;--warn:#E0B35A;--warn-soft:#3C3118;--crit:#E58A80;--crit-soft:#3E2422;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15191C;--surface:#1E2327;--surface-2:#242A2F;--line:#30373D;--line-strong:#465058;
+  --fg:#EDEBE4;--fg-2:#B8BCC2;--fg-3:#868C94;--ink:#7FBFA6;--ink-2:#9ACFBA;--ink-soft:#1F3A32;
+  --brass:#D4AE55;--brass-soft:#3A3120;--good:#7CC496;--good-soft:#213A2B;--warn:#E0B35A;--warn-soft:#3C3118;--crit:#E58A80;--crit-soft:#3E2422;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3);color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--font-display);font-weight:500;margin:0;text-wrap:balance;letter-spacing:-.005em}
+h1{font-size:30px;line-height:1.15}
+h2{font-size:22px;line-height:1.2}
+h3{font-size:18px;line-height:1.25}
+p{margin:0}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);font-weight:600}
+.muted{color:var(--fg-2)}
+.small{font-size:14px}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* Shell */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100%}
+.rail{position:sticky;top:env(safe-area-inset-top,0px);height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));background:var(--ink);color:#F1F3EF;display:flex;flex-direction:column;padding-block:22px 18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:14px}
+.brand{display:flex;align-items:baseline;gap:8px;padding:0 8px 22px}
+.brand .mark{font-family:var(--font-display);font-size:26px;font-weight:600;letter-spacing:-.01em}
+.brand .tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:var(--radius);padding:10px 10px;color:inherit;opacity:.78;font-weight:500}
+.nav button:hover{opacity:1;background:rgba(255,255,255,.07)}
+.nav button[aria-current="page"]{opacity:1;background:rgba(255,255,255,.14)}
+.nav svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav .cnt{margin-left:auto;font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,.16);border-radius:10px;padding:0 7px}
+.rail .company{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,.14);font-size:14px}
+.rail .company b{display:block;font-weight:600}
+.rail .company span{opacity:.7;font-size:13px}
+
+.main{min-width:0;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.view[hidden]{display:none}
+.view{display:flex;flex-direction:column;gap:22px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.head .lead{max-width:62ch;color:var(--fg-2);margin-top:6px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card.flat{box-shadow:none}
+.grid{display:grid;gap:16px}
+.g-2{grid-template-columns:1fr 1fr}.g-3{grid-template-columns:repeat(3,1fr)}
+.g-hero{grid-template-columns:1.2fr 1fr}
+@media (max-width:860px){.g-2,.g-3,.g-hero{grid-template-columns:1fr}}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-strong);background:var(--surface);border-radius:var(--radius);padding:10px 16px;font-weight:600;font-size:15px;line-height:1.2}
+.btn:hover{border-color:var(--fg-3)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#F4F6F3}
+.btn.primary:hover{background:var(--ink-2)}
+.btn.sm{padding:6px 11px;font-size:14px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink);font-weight:600}
+.btn.ghost:hover{background:var(--ink-soft)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* Score hero */
+.score-hero{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.gauge{position:relative;width:168px;height:168px}
+.gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge circle{fill:none;stroke-width:12;stroke-linecap:butt}
+.gauge .track{stroke:var(--line)}
+.gauge .fill{stroke:var(--ink);transition:stroke-dasharray .6s ease}
+.gauge .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .val b{font-family:var(--font-display);font-size:48px;font-weight:600;line-height:1}
+.gauge .val span{font-size:12px;color:var(--fg-3);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.valuation{display:flex;flex-direction:column;gap:6px}
+.valuation .big{font-family:var(--font-display);font-size:34px;font-weight:500;color:var(--brass);line-height:1.1}
+.valuation .big small{font-size:18px;color:var(--fg-2);font-family:var(--font-body)}
+.delta{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:3px 9px;border-radius:12px;background:var(--good-soft);color:var(--good)}
+.delta.down{background:var(--crit-soft);color:var(--crit)}
+.delta.flat{background:var(--surface-2);color:var(--fg-2)}
+
+/* Axes */
+.axes{display:flex;flex-direction:column;gap:12px}
+.axis{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center}
+.axis .bar{grid-column:1/-1;height:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.axis .bar i{display:block;height:100%;background:var(--ink);transition:width .5s ease}
+.axis .bar i.low{background:var(--crit)}.axis .bar i.mid{background:var(--warn)}
+.axis .name{font-weight:500}
+.axis .sc{font-family:var(--font-mono);font-size:14px;color:var(--fg-2)}
+
+/* Status pills */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 9px;border-radius:12px;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.crit{background:var(--crit-soft);color:var(--crit)}.pill.neutral{background:var(--surface-2);color:var(--fg-2);border:1px solid var(--line)}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+
+/* Lists */
+.list{display:flex;flex-direction:column}
+.list > *{padding:14px 0;border-top:1px solid var(--line)}
+.list > :first-child{border-top:0;padding-top:0}
+.list > :last-child{padding-bottom:0}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
+.row .t{font-weight:600}
+.row .d{color:var(--fg-2);font-size:14px;margin-top:2px}
+.check{appearance:none;width:22px;height:22px;border:2px solid var(--line-strong);border-radius:4px;margin-top:2px;position:relative;cursor:pointer;background:var(--surface)}
+.check:checked{background:var(--ink);border-color:var(--ink)}
+.check:checked::after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.row.done .t{color:var(--fg-3);text-decoration:line-through}
+.impact{font-family:var(--font-mono);font-size:14px;color:var(--brass);white-space:nowrap;text-align:right}
+.impact small{display:block;color:var(--fg-3);font-family:var(--font-body);font-size:12px}
+
+/* Sparkline */
+.spark{width:100%;height:68px}
+.spark path{fill:none;stroke:var(--ink);stroke-width:2}
+.spark .area{fill:var(--ink);opacity:.1;stroke:none}
+.spark .grid{stroke:var(--line);stroke-width:1}
+.spark text{fill:var(--fg-3);font-size:10px;font-family:var(--font-mono)}
+.spark .end{fill:var(--ink)}
+
+/* Month ritual */
+.ritual{background:var(--ink);color:#F1F3EF;border-color:var(--ink)}
+.ritual .eyebrow{color:rgba(255,255,255,.65)}
+.ritual h3{color:#fff;margin-top:6px}
+.ritual p{color:rgba(255,255,255,.82)}
+.ritual .btn{background:#fff;color:var(--ink);border-color:#fff;margin-top:14px}
+.ritual .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+
+/* Timeline (plan) */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.phase{padding:14px 16px;border-left:1px solid var(--line)}
+.phase:first-child{border-left:0}
+.phase .eyebrow{display:block}
+.phase b{display:block;font-family:var(--font-display);font-size:18px;font-weight:500;margin:4px 0 2px}
+.phase .prog{height:6px;background:var(--surface-2);border-radius:3px;margin-top:10px;overflow:hidden}
+.phase .prog i{display:block;height:100%;background:var(--ink)}
+@media (max-width:860px){.phases{grid-template-columns:1fr}.phase{border-left:0;border-top:1px solid var(--line)}.phase:first-child{border-top:0}}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line-strong);background:var(--surface);border-radius:14px;padding:5px 12px;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* Questionnaire */
+.q-progress{display:flex;align-items:center;gap:12px}
+.q-progress .track{flex:1;height:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.q-progress .track i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.options{display:grid;gap:10px;margin-top:18px}
+.opt{display:flex;align-items:center;gap:12px;border:1px solid var(--line-strong);border-radius:var(--radius);padding:14px 16px;background:var(--surface);text-align:left;font-size:16px}
+.opt:hover{border-color:var(--ink)}
+.opt[aria-pressed="true"]{border-color:var(--ink);background:var(--ink-soft);box-shadow:inset 0 0 0 1px var(--ink)}
+.opt .k{font-family:var(--font-mono);font-size:13px;color:var(--fg-3);width:20px}
+.q-nav{display:flex;justify-content:space-between;gap:12px;margin-top:22px}
+.q-axis{color:var(--ink);font-weight:600;font-size:14px}
+.result{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+@media (max-width:640px){.result,.score-hero{grid-template-columns:1fr;justify-items:center;text-align:center}}
+
+/* Savoir-faire */
+.proc{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center}
+.proc .t{font-weight:600}.proc .d{color:var(--fg-2);font-size:14px}
+.cov{width:90px;height:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.cov i{display:block;height:100%;background:var(--ink)}
+.interview{display:flex;flex-direction:column;gap:14px}
+.bubble{max-width:60ch;padding:12px 16px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--line)}
+.bubble.me{align-self:flex-end;background:var(--ink-soft);border-color:transparent}
+.bubble .who{font-size:12px;color:var(--fg-3);letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-bottom:4px}
+textarea.answer{width:100%;min-height:92px;border:1px solid var(--line-strong);border-radius:var(--radius);padding:12px;background:var(--surface);resize:vertical}
+.sop{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;font-size:15px}
+.sop h3{margin-bottom:8px}
+.sop ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.rec{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--fg-2)}
+.rec i{width:10px;height:10px;border-radius:50%;background:var(--crit);display:inline-block;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.rec i{animation:none}*{transition:none!important}}
+
+/* Data room */
+.tree{display:flex;flex-direction:column}
+.folder{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-weight:600}
+.folder:first-child{border-top:0}
+.folder .cnt{margin-left:auto;font-family:var(--font-mono);font-size:13px;color:var(--fg-3)}
+.docs{padding:0 0 8px 28px;display:flex;flex-direction:column;gap:8px}
+.doc{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;font-size:15px}
+.doc .meta{color:var(--fg-3);font-size:13px}
+.tiers{display:flex;flex-direction:column;gap:10px}
+.tier{display:flex;align-items:center;gap:12px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--ink-soft);color:var(--ink);display:grid;place-items:center;font-weight:600;font-size:14px;flex:none}
+.tier .r{font-size:13px;color:var(--fg-3)}
+.readiness{display:flex;align-items:baseline;gap:10px}
+.readiness b{font-family:var(--font-display);font-size:40px;font-weight:500}
+.readiness span{color:var(--fg-2)}
+
+/* Cession pipeline */
+.pipe{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:10px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.col h4{margin:0 0 2px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-3);display:flex;justify-content:space-between}
+.buyer{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow)}
+.buyer b{display:block;font-weight:600}
+.buyer .type{font-size:13px;color:var(--fg-2)}
+.buyer .acts{display:flex;gap:6px;margin-top:8px}
+.buyer .acts button{border:1px solid var(--line-strong);background:var(--surface);border-radius:4px;padding:3px 8px;font-size:13px}
+.teaser{font-family:var(--font-display);font-size:15px;line-height:1.55}
+.teaser .eyebrow{font-family:var(--font-body);margin-bottom:8px;display:block}
+.teaser dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-family:var(--font-body);font-size:14px;margin:12px 0 0}
+.teaser dt{color:var(--fg-3)}.teaser dd{margin:0;font-weight:500}
+.locked{position:relative}
+.locked .veil{position:absolute;inset:0;background:color-mix(in srgb,var(--surface) 70%,transparent);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;border-radius:var(--radius)}
+.locked .veil .in{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;max-width:380px;box-shadow:var(--shadow)}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:var(--radius);font-size:14px;font-weight:500;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Phone */
+.tabbar{display:none}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .rail{display:none}
+  .main{padding-block:18px 96px}
+  .tabbar{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;background:var(--ink);color:#F1F3EF;padding-top:6px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px));z-index:20}
+  .tabbar button{background:none;border:0;color:inherit;opacity:.7;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;padding:4px 0}
+  .tabbar button[aria-current="page"]{opacity:1}
+  .tabbar svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .pipe{grid-template-columns:repeat(5,230px)}
+  h1{font-size:26px}
+}
+.mobile-brand{display:none}
+@media (max-width:860px){.mobile-brand{display:flex;align-items:baseline;gap:8px;color:var(--ink);margin-bottom:4px}.mobile-brand .mark{font-family:var(--font-display);font-size:22px;font-weight:600}.mobile-brand .tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3)}}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><span class="mark">Relève</span><span class="tag">Beta</span></div>
+    <nav class="nav" id="nav">
+      <button data-view="cockpit" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 18 0"/><path d="M12 12l4-4"/><path d="M3 12h2M19 12h2"/></svg>Cockpit</button>
+      <button data-view="plan"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/><path d="M17 15l2 2 4-4"/></svg>Plan<span class="cnt" id="navPlanCnt">0</span></button>
+      <button data-view="savoir"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg>Savoir-faire</button>
+      <button data-view="dataroom"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Data room</button>
+      <button data-view="cession"><svg viewBox="0 0 24 24"><path d="M4 5h5v14H4zM10 9h5v10h-5zM16 13h4v6h-4z"/></svg>Cession</button>
+      <button data-view="score"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 7-7"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Diagnostic</button>
+    </nav>
+    <div class="company"><b>Atelier Roussel</b><span>Menuiserie · Montpellier · 11 salariés</span><br><span>Jean-Marc Roussel, 58 ans</span></div>
+  </aside>
+
+  <main class="main"><div class="wrap">
+    <div class="mobile-brand"><span class="mark">Relève</span><span class="tag">Atelier Roussel</span></div>
+
+    <!-- COCKPIT -->
+    <section class="view" id="view-cockpit">
+      <div class="head">
+        <div><p class="eyebrow">Cockpit · novembre 2026</p><h1>Bonjour Jean-Marc. Voici où en est votre entreprise.</h1>
+        <p class="lead">Votre transmissibilité progresse. Une action ce mois-ci suffit pour franchir la barre des 60.</p></div>
+        <button class="btn" data-go="score">Refaire le diagnostic</button>
+      </div>
+
+      <div class="grid g-hero">
+        <div class="card">
+          <div class="score-hero">
+            <div class="gauge"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle class="fill" id="gaugeFill" cx="60" cy="60" r="52" stroke-dasharray="0 327"/></svg>
+              <div class="val"><b id="scoreBig">—</b><span>Transmissibilité</span></div></div>
+            <div class="valuation">
+              <p class="eyebrow">Valeur estimée aujourd'hui</p>
+              <p class="big" id="valBig">—</p>
+              <p class="muted small" id="valBasis">Base : EBE normalisé 190 k€ × multiple sectoriel ajusté à votre score.</p>
+              <div><span class="delta" id="valDelta">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card ritual">
+          <p class="eyebrow">L'action du mois</p>
+          <h3 id="ritualTitle">—</h3>
+          <p id="ritualDesc">—</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="ritualDo">Marquer comme faite</button><button class="btn ghost" data-go="plan">Voir le plan</button></div>
+        </div>
+      </div>
+
+      <div class="grid g-2">
+        <div class="card">
+          <div class="head" style="margin-bottom:16px"><h2>Les six axes</h2><span class="small muted">Pondérés selon le secteur</span></div>
+          <div class="axes" id="axesList"></div>
+        </div>
+        <div class="card">
+          <div class="head" style="margin-bottom:12px"><h2>12 derniers mois</h2><span class="delta" id="sparkDelta">—</span></div>
+          <svg class="spark" id="spark" viewBox="0 0 320 68" preserveAspectRatio="none"></svg>
+          <p class="small muted" style="margin-top:10px">Score au 1er de chaque mois. Vous avez démarré à 41 en décembre 2025.</p>
+          <div class="list" style="margin-top:18px">
+            <div class="row" style="grid-template-columns:1fr auto"><div><span class="t">Data room</span><div class="d">Documents à jour</div></div><span class="pill warn" id="drPill"><i></i>—</span></div>
+            <div class="row" style="grid-template-columns:1fr auto"><div><span class="t">Savoir-faire documenté</span><div class="d">Processus couverts</div></div><span class="pill warn" id="sfPill"><i></i>—</span></div>
+            <div class="row" style="grid-template-columns:1fr auto"><div><span class="t">Cabinet Vernet &amp; Associés</span><div class="d">Expert-comptable · dernier point le 14 oct.</div></div><span class="pill good"><i></i>Connecté</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section class="view" id="view-plan" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Plan de transmissibilité</p><h1>Trois ans pour rendre l'entreprise vendable sans vous.</h1>
+        <p class="lead">Chaque action a un effet estimé sur la valeur. Cochez-la quand elle est faite : le score et la valeur se recalculent.</p></div>
+      </div>
+      <div class="phases" id="phases"></div>
+      <div class="card">
+        <div class="head" style="margin-bottom:14px"><div class="filters" id="planFilters"></div><span class="small muted" id="planSummary"></span></div>
+        <div class="list" id="planList"></div>
+      </div>
+    </section>
+
+    <!-- SAVOIR-FAIRE -->
+    <section class="view" id="view-savoir" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Savoir-faire</p><h1>Ce que vous avez dans la tête, écrit noir sur blanc.</h1>
+        <p class="lead">Quinze minutes par semaine. Vous parlez, Relève rédige le manuel d'exploitation que le repreneur paiera cher.</p></div>
+      </div>
+      <div class="grid g-2">
+        <div class="card">
+          <div class="head" style="margin-bottom:14px"><h2>Processus de l'atelier</h2><span class="pill warn" id="procPill"><i></i>—</span></div>
+          <div class="list" id="procList"></div>
+        </div>
+        <div class="card">
+          <div class="head" style="margin-bottom:14px"><h2>Entretien de la semaine</h2><span class="rec"><i></i>Devis sur mesure</span></div>
+          <div class="interview" id="interview">
+            <div class="bubble"><div class="who">Relève</div>Quand un particulier vous appelle pour une cuisine sur mesure, qui prend l'appel et que se passe-t-il ensuite ?</div>
+            <div class="bubble me"><div class="who">Jean-Marc</div>C'est Nadia qui décroche. Elle note le besoin, et si c'est sérieux je passe sur place dans la semaine. Je prends les cotes moi-même, toujours.</div>
+            <div class="bubble"><div class="who">Relève</div>Et après la visite, comment le devis est-il construit ? Qui fixe les prix, et en combien de temps le client le reçoit-il ?</div>
+          </div>
+          <div style="margin-top:14px"><label class="eyebrow" for="ans" style="display:block;margin-bottom:6px">Votre réponse (ou dictez-la)</label>
+            <textarea id="ans" class="answer" placeholder="Je rentre à l'atelier, je…"></textarea>
+            <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap"><button class="btn primary" id="ansSend">Envoyer</button><button class="btn" id="ansDictate">Dicter</button></div>
+          </div>
+          <div class="sop" id="sop" style="margin-top:18px" hidden>
+            <p class="eyebrow">Fiche générée · Devis sur mesure (brouillon)</p>
+            <h3>Du premier appel au devis signé</h3>
+            <ol id="sopList"></ol>
+            <p class="small muted" style="margin-top:10px">Point de dépendance repéré : la prise de cotes repose uniquement sur le dirigeant. Action proposée : former Lucas sur 3 chantiers.</p>
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" id="sopAccept">Valider la fiche</button><button class="btn sm" id="sopAddAction">Ajouter l'action au plan</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA ROOM -->
+    <section class="view" id="view-dataroom" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Data room</p><h1>Le dossier de cession, prêt le jour où vous déciderez.</h1>
+        <p class="lead">Tout est rangé, daté et maintenu à jour. Vos tiers de confiance déposent et consultent avec un accès limité à leur périmètre.</p></div>
+        <button class="btn primary" id="drInvite">Inviter un tiers de confiance</button>
+      </div>
+      <div class="grid g-hero">
+        <div class="card">
+          <div class="head" style="margin-bottom:14px"><div class="readiness"><b id="drPct">—</b><span>du dossier complet et à jour</span></div><span class="small muted" id="drMissing"></span></div>
+          <div class="tree" id="tree"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <h2 style="margin-bottom:12px">Tiers de confiance</h2>
+            <div class="tiers" id="tiers">
+              <div class="tier"><span class="avatar">CV</span><div><b>Claire Vernet</b><div class="r">Expert-comptable · Finances, Juridique</div></div><span class="pill good" style="margin-left:auto"><i></i>Actif</span></div>
+              <div class="tier"><span class="avatar">PB</span><div><b>Me Paul Bastide</b><div class="r">Avocat · Juridique</div></div><span class="pill neutral" style="margin-left:auto">Invité</span></div>
+              <div class="tier"><span class="avatar">SL</span><div><b>Sophie Lherm</b><div class="r">Conseillère CCI Hérault · Lecture seule</div></div><span class="pill good" style="margin-left:auto"><i></i>Actif</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <h2 style="margin-bottom:10px">Journal</h2>
+            <div class="list small">
+              <div>Claire Vernet a déposé <b>Liasse fiscale 2025</b> · hier</div>
+              <div>Le <b>bail commercial</b> arrive à échéance dans 14 mois · rappel créé</div>
+              <div>Vous avez validé la fiche <b>Réception chantier</b> · 28 oct.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CESSION -->
+    <section class="view" id="view-cession" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Cession</p><h1>Quand vous serez prêt, tout est déjà là.</h1>
+        <p class="lead">Un teaser anonyme généré depuis votre data room, et un suivi des repreneurs, NDA après NDA. En lecture seule tant que le mode cession n'est pas activé.</p></div>
+        <button class="btn primary" id="cessionToggle">Activer le mode cession</button>
+      </div>
+      <div class="grid g-hero">
+        <div class="card locked" id="pipeCard">
+          <div class="head" style="margin-bottom:14px"><h2>Repreneurs</h2><span class="small muted" id="pipeCount"></span></div>
+          <div class="pipe" id="pipe"></div>
+          <div class="veil" id="pipeVeil"><div class="in"><h3>Mode cession désactivé</h3><p class="small muted" style="margin:8px 0 12px">Rien ne sort de Relève tant que vous ne l'avez pas décidé. L'activation prévient uniquement vos tiers de confiance.</p><button class="btn primary sm" id="cessionToggle2">Activer</button></div></div>
+        </div>
+        <div class="card">
+          <div class="head" style="margin-bottom:12px"><h2>Teaser anonyme</h2><span class="pill neutral">Généré automatiquement</span></div>
+          <div class="teaser">
+            <span class="eyebrow">Menuiserie bois et agencement · Occitanie</span>
+            Entreprise familiale créée en 1994, spécialisée dans l'agencement sur mesure pour particuliers et architectes. Atelier de 600 m² en propriété, parc machines renouvelé en 2022. Clientèle récurrente de prescripteurs, carnet de commandes de 5 mois.
+            <dl><dt>Chiffre d'affaires</dt><dd class="num">1,42 M€</dd><dt>EBE normalisé</dt><dd class="num">190 k€</dd><dt>Effectif</dt><dd>11 dont 2 chefs d'atelier</dd><dt>Motif</dt><dd>Départ en retraite, accompagnement 12 mois</dd><dt>Valeur indicative</dt><dd class="num" id="teaserVal">—</dd></dl>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="teaserCopy">Copier le teaser</button><button class="btn sm" disabled>Partager (mode cession)</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAGNOSTIC -->
+    <section class="view" id="view-score" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Diagnostic de transmissibilité</p><h1>Douze questions. Dix minutes. Une valeur.</h1>
+        <p class="lead">Répondez comme vous le diriez à votre expert-comptable. Il n'y a pas de bonne réponse, seulement un point de départ.</p></div>
+      </div>
+      <div class="card" id="quiz">
+        <div class="q-progress"><span class="small num" id="qStep">1 / 12</span><div class="track"><i id="qBar" style="width:8%"></i></div><span class="q-axis" id="qAxis"></span></div>
+        <h2 id="qText" style="margin-top:22px"></h2>
+        <div class="options" id="qOpts"></div>
+        <div class="q-nav"><button class="btn" id="qPrev">Précédent</button><button class="btn primary" id="qNext">Suivant</button></div>
+      </div>
+      <div class="card" id="quizResult" hidden>
+        <div class="result">
+          <div class="gauge"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle class="fill" id="gaugeFill2" cx="60" cy="60" r="52" stroke-dasharray="0 327"/></svg><div class="val"><b id="scoreBig2">—</b><span>sur 100</span></div></div>
+          <div>
+            <p class="eyebrow">Votre entreprise vaut aujourd'hui</p>
+            <p class="big valuation" style="font-family:var(--font-display);font-size:34px;color:var(--brass)" id="valBig2">—</p>
+            <p class="muted" style="margin-top:6px" id="resultText"></p>
+            <p style="margin-top:10px"><b>Les trois chantiers qui font le plus bouger le prix :</b></p>
+            <ol id="top3" style="margin:6px 0 0;padding-left:20px"></ol>
+            <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap"><button class="btn primary" data-go="cockpit">Ouvrir mon cockpit</button><button class="btn" id="qRedo">Recommencer</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div></main>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <button data-view="cockpit" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 18 0"/><path d="M12 12l4-4"/></svg>Cockpit</button>
+  <button data-view="plan"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/><path d="M17 15l2 2 4-4"/></svg>Plan</button>
+  <button data-view="savoir"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg>Savoir</button>
+  <button data-view="dataroom"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Dossier</button>
+  <button data-view="cession"><svg viewBox="0 0 24 24"><path d="M4 5h5v14H4zM10 9h5v10h-5zM16 13h4v6h-4z"/></svg>Cession</button>
+  <button data-view="score"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 7-7"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Diag.</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+/* ---------- Model ---------- */
+const AXES=[
+ {id:'dep',name:'Dépendance au dirigeant',w:.25,base:34},
+ {id:'cli',name:'Clients et récurrence',w:.15,base:62},
+ {id:'fin',name:'Qualité financière',w:.20,base:71},
+ {id:'proc',name:'Processus documentés',w:.15,base:40},
+ {id:'team',name:'Équipe et relève interne',w:.15,base:53},
+ {id:'jur',name:'Juridique et actifs',w:.10,base:68},
+];
+const EBE=190000;
+const ACTIONS=[
+ {id:1,axis:'dep',phase:1,t:'Déléguer la prise de cotes à Lucas sur 3 chantiers',d:'Aujourd’hui, seul le dirigeant mesure sur site. Un repreneur voit un risque de perte de qualité à votre départ.',pts:9,done:false},
+ {id:2,axis:'dep',phase:1,t:'Donner la signature des devis sous 15 k€ à Nadia',d:'Débloque les ventes en votre absence. Procuration bancaire à mettre à jour avec Claire Vernet.',pts:6,done:false},
+ {id:3,axis:'fin',phase:1,t:'Retraiter la rémunération du dirigeant dans un EBE normalisé',d:'Votre salaire de gérant est inférieur au marché : la rentabilité réelle est sous-estimée dans les comptes.',pts:5,done:true},
+ {id:4,axis:'jur',phase:1,t:'Renouveler le bail commercial avant l’échéance',d:'Un bail de moins de 3 ans restants fait baisser toute offre de reprise. Échéance : janvier 2028.',pts:4,done:false},
+ {id:5,axis:'cli',phase:1,t:'Formaliser un contrat-cadre avec l’agence Delmas Architectes',d:'Votre premier prescripteur (18 % du CA) travaille sans contrat écrit.',pts:7,done:false},
+ {id:6,axis:'proc',phase:2,t:'Documenter les 8 processus clés de l’atelier',d:'Du devis à la réception. Relève rédige à partir de vos entretiens hebdomadaires.',pts:10,done:false},
+ {id:7,axis:'team',phase:2,t:'Nommer un chef d’atelier adjoint et le former au planning',d:'Le planning de production dépend d’une seule personne : vous.',pts:8,done:false},
+ {id:8,axis:'fin',phase:2,t:'Sortir l’immobilier de la société d’exploitation',d:'Le bâtiment de 600 m² alourdit le prix de cession. Séparer les murs facilite le financement du repreneur.',pts:6,done:false},
+ {id:9,axis:'cli',phase:2,t:'Passer de 3 à 6 prescripteurs réguliers',d:'Réduit la concentration et sécurise le carnet de commandes.',pts:6,done:false},
+ {id:10,axis:'team',phase:3,t:'Mettre en place une prime d’intéressement pour les 2 chefs d’atelier',d:'Fidélise les personnes clés pendant et après la reprise.',pts:5,done:false},
+ {id:11,axis:'dep',phase:3,t:'Prendre 3 semaines d’absence sans intervenir',d:'Le test que tout repreneur fera mentalement. Faites-le avant lui.',pts:8,done:false},
+ {id:12,axis:'jur',phase:3,t:'Déposer la marque « Atelier Roussel » à l’INPI',d:'Un actif immatériel transmissible, pour 190 €.',pts:2,done:false},
+];
+const PROCS=[
+ {t:'Devis sur mesure',d:'Du premier appel au devis signé',cov:.35,owner:'Jean-Marc'},
+ {t:'Planning de production',d:'Lancement, ordonnancement, charges',cov:.1,owner:'Jean-Marc'},
+ {t:'Achats bois et quincaillerie',d:'Fournisseurs, délais, négociation',cov:.6,owner:'Nadia'},
+ {t:'Pose et réception chantier',d:'Équipe, contrôle, PV de réception',cov:1,owner:'Lucas'},
+ {t:'Relance et encaissement',d:'Acomptes, situations, impayés',cov:.8,owner:'Nadia'},
+ {t:'Entretien du parc machines',d:'Calendrier, prestataires, sécurité',cov:0,owner:'Jean-Marc'},
+ {t:'Recrutement et intégration',d:'Apprentis, intérim, période d’essai',cov:0,owner:'Jean-Marc'},
+ {t:'Relation prescripteurs',d:'Architectes, agences, suivi',cov:.2,owner:'Jean-Marc'},
+];
+const TREE=[
+ {f:'Finances',docs:[['Liasses fiscales 2023–2025','à jour','hier'],['Situation comptable au 30/09','à jour','12 oct.'],['Prévisionnel 2027','manquant','']]},
+ {f:'Juridique',docs:[['Statuts à jour','à jour','2024'],['Bail commercial','périmé','échéance janv. 2028'],['Kbis','à jour','3 mois'],['Pacte d’associés','manquant','']]},
+ {f:'Commercial',docs:[['Top 20 clients et récurrence','à jour','oct.'],['Contrats-cadres prescripteurs','manquant',''],['Carnet de commandes','à jour','hier']]},
+ {f:'Équipe',docs:[['Organigramme réel','à jour','sept.'],['Contrats de travail et avenants','à jour','2026'],['Grille de polyvalence','manquant','']]},
+ {f:'Savoir-faire',docs:[['Manuel d’exploitation (8 fiches)','périmé','3 fiches validées']]},
+ {f:'Actifs',docs:[['Inventaire machines et valeur','à jour','2025'],['Assurances et sinistralité','à jour','2026'],['Titre de propriété atelier','à jour','1994']]},
+];
+const QUIZ=[
+ {ax:'dep',q:'Si vous partiez trois semaines sans téléphone, que se passerait-il ?',o:['Tout tourne, personne ne le remarque','Quelques décisions attendent mon retour','Les devis et la production s’arrêtent'],s:[100,55,15]},
+ {ax:'dep',q:'Qui connaît personnellement vos dix plus gros clients ?',o:['Au moins deux personnes de l’équipe','Une personne en plus de moi','Moi seulement'],s:[100,60,15]},
+ {ax:'cli',q:'Quelle part du chiffre d’affaires fait votre premier client ?',o:['Moins de 10 %','Entre 10 et 25 %','Plus de 25 %'],s:[100,60,20]},
+ {ax:'cli',q:'Vos clients reviennent-ils ?',o:['La majorité du CA est récurrente ou sous contrat','Une partie revient, sans engagement','Chaque année repart de zéro'],s:[100,55,20]},
+ {ax:'fin',q:'Comment décririez-vous vos comptes des trois dernières années ?',o:['Bénéficiaires et lisibles, sans retraitement','Corrects, avec quelques charges personnelles à retraiter','Irréguliers ou difficiles à expliquer'],s:[100,60,20]},
+ {ax:'fin',q:'Votre rémunération de dirigeant est-elle au niveau du marché ?',o:['Oui, un repreneur pourrait se payer pareil','Plutôt en dessous','Je me paie très peu, ou en dividendes'],s:[100,55,25]},
+ {ax:'proc',q:'Vos façons de faire sont-elles écrites quelque part ?',o:['Un manuel à jour que l’équipe utilise','Quelques fiches, pas toujours à jour','Tout est dans ma tête'],s:[100,50,10]},
+ {ax:'proc',q:'Un nouvel embauché devient autonome en combien de temps ?',o:['Quelques semaines, avec le manuel','Quelques mois, en me regardant faire','Très longtemps, il faut tout lui montrer'],s:[100,55,20]},
+ {ax:'team',q:'Y a-t-il quelqu’un dans l’équipe capable de prendre votre place demain ?',o:['Oui, et c’est connu','Peut-être, avec de la formation','Non'],s:[100,55,10]},
+ {ax:'team',q:'Vos personnes clés sont-elles fidélisées ?',o:['Intéressement ou participation en place','Bonne ambiance, rien de formel','Risque de départ à ma cession'],s:[100,55,20]},
+ {ax:'jur',q:'Bail, statuts, marques, assurances : où en êtes-vous ?',o:['Tout est à jour et réuni','À jour, mais dispersé','Je ne sais pas trop'],s:[100,60,25]},
+ {ax:'jur',q:'Les murs de l’entreprise :',o:['Sont dans une structure séparée ou loués','Appartiennent à la société d’exploitation','Je ne sais pas'],s:[100,50,40]},
+];
+
+const state={axes:{},quiz:Array(QUIZ.length).fill(null),q:0,filter:'all',cession:false,history:[41,43,44,47,47,49,52,53,55,55,57,0]};
+AXES.forEach(a=>state.axes[a.id]=a.base);
+try{const s=localStorage.getItem('releve-demo');if(s){const p=JSON.parse(s);if(p.done)ACTIONS.forEach(a=>a.done=!!p.done[a.id]);if(p.axes)Object.assign(state.axes,p.axes);if(p.cession)state.cession=true}}catch(e){}
+function persist(){try{const done={};ACTIONS.forEach(a=>done[a.id]=a.done);localStorage.setItem('releve-demo',JSON.stringify({done,axes:state.axes,cession:state.cession}))}catch(e){}}
+
+/* ---------- Computations ---------- */
+function axisScore(id){const a=AXES.find(x=>x.id===id);let s=state.axes[id];ACTIONS.filter(x=>x.axis===id&&x.done).forEach(x=>s+=x.pts);return Math.max(0,Math.min(100,Math.round(s)))}
+function score(){return Math.round(AXES.reduce((t,a)=>t+axisScore(a.id)*a.w,0))}
+function multiple(s){return 2.4+(s/100)*2.0}
+function valuation(s){const m=multiple(s);const mid=EBE*m;return {lo:mid*.88,hi:mid*1.12,mid,m}}
+function kE(v){return Math.round(v/1000).toLocaleString('fr-FR')+' k€'}
+function fmtRange(v){return kE(v.lo)+' – '+kE(v.hi)}
+const fmt1=n=>n.toFixed(1).replace('.',',');
+
+/* ---------- Render ---------- */
+const $=s=>document.querySelector(s);
+function gauge(id,s){const c=2*Math.PI*52;$(id).setAttribute('stroke-dasharray',(c*s/100)+' '+c)}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2400)}
+
+function renderCockpit(){
+  const s=score(),v=valuation(s);
+  $('#scoreBig').textContent=s;gauge('#gaugeFill',s);
+  $('#valBig').innerHTML=fmtRange(v)+' <small>· multiple '+fmt1(v.m)+'×</small>';
+  const base=valuation(AXES.reduce((t,a)=>t+a.base*a.w,0));const gain=v.mid-base.mid;
+  const d=$('#valDelta');d.className='delta '+(gain>0?'':gain<0?'down':'flat');d.textContent=(gain>=0?'+':'−')+kE(Math.abs(gain))+' depuis le diagnostic initial';
+  $('#teaserVal').textContent=fmtRange(v);
+  const next=ACTIONS.filter(a=>!a.done).sort((a,b)=>a.phase-b.phase||b.pts-a.pts)[0];
+  if(next){$('#ritualTitle').textContent=next.t;$('#ritualDesc').textContent=next.d+' Effet estimé : +'+kE(next.pts*0.02*EBE*2.4)+'.';$('#ritualDo').hidden=false;$('#ritualDo').onclick=()=>{next.done=true;persist();renderAll();toast('Bravo. Score et valeur mis à jour.')}}
+  else{$('#ritualTitle').textContent='Plan terminé';$('#ritualDesc').textContent='Votre entreprise est prête à être transmise. Activez le mode cession quand vous le déciderez.';$('#ritualDo').hidden=true}
+  $('#axesList').innerHTML=AXES.map(a=>{const sc=axisScore(a.id);const cls=sc<45?'low':sc<65?'mid':'';return '<div class="axis"><span class="name">'+a.name+'</span><span class="sc">'+sc+' / 100</span><div class="bar"><i class="'+cls+'" style="width:'+sc+'%"></i></div></div>'}).join('');
+  state.history[11]=s;renderSpark();
+  const done=ACTIONS.filter(a=>a.done).length;$('#navPlanCnt').textContent=(ACTIONS.length-done);
+  const dr=drStats();$('#drPill').className='pill '+(dr.pct>=80?'good':dr.pct>=50?'warn':'crit');$('#drPill').innerHTML='<i></i>'+dr.pct+' %';
+  const cov=Math.round(PROCS.reduce((t,p)=>t+p.cov,0)/PROCS.length*100);$('#sfPill').className='pill '+(cov>=80?'good':cov>=40?'warn':'crit');$('#sfPill').innerHTML='<i></i>'+cov+' %';
+}
+function renderSpark(){
+  const h=state.history,W=320,H=68,pad=6,min=35,max=75;
+  const x=i=>pad+i*(W-2*pad)/(h.length-1),y=v=>H-pad-(v-min)/(max-min)*(H-2*pad-10);
+  let d='',a='M'+x(0)+','+(H-pad);
+  h.forEach((v,i)=>{d+=(i?'L':'M')+x(i).toFixed(1)+','+y(v).toFixed(1)+' ';a+='L'+x(i).toFixed(1)+','+y(v).toFixed(1)+' '});a+='L'+x(h.length-1)+','+(H-pad)+'Z';
+  const grid=[40,50,60,70].map(g=>'<line class="grid" x1="'+pad+'" x2="'+(W-pad)+'" y1="'+y(g)+'" y2="'+y(g)+'"/><text x="'+(W-pad)+'" y="'+(y(g)-2)+'" text-anchor="end">'+g+'</text>').join('');
+  $('#spark').innerHTML=grid+'<path class="area" d="'+a+'"/><path d="'+d+'"/><circle class="end" cx="'+x(h.length-1)+'" cy="'+y(h[h.length-1])+'" r="3.5"/>';
+  const dd=$('#sparkDelta');const diff=h[11]-h[0];dd.className='delta '+(diff>0?'':'flat');dd.textContent=(diff>=0?'+':'')+diff+' pts sur 12 mois';
+}
+function renderPlan(){
+  const ph=[1,2,3].map(p=>{const acts=ACTIONS.filter(a=>a.phase===p),done=acts.filter(a=>a.done).length;return {p,acts,done}});
+  const labels={1:'Année 1 · Rendre l’entreprise autonome',2:'Année 2 · Structurer et documenter',3:'Année 3 · Sécuriser la relève'};
+  $('#phases').innerHTML=ph.map(x=>'<div class="phase"><span class="eyebrow">Phase '+x.p+'</span><b>'+labels[x.p].split(' · ')[1]+'</b><span class="small muted">'+x.done+' / '+x.acts.length+' actions faites</span><div class="prog"><i style="width:'+(x.acts.length?x.done/x.acts.length*100:0)+'%"></i></div></div>').join('');
+  const f=[['all','Toutes'],...AXES.map(a=>[a.id,a.name])];
+  $('#planFilters').innerHTML=f.map(([id,n])=>'<button class="chip" data-f="'+id+'" aria-pressed="'+(state.filter===id)+'">'+n+'</button>').join('');
+  $('#planFilters').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{state.filter=b.dataset.f;renderPlan()});
+  const list=ACTIONS.filter(a=>state.filter==='all'||a.axis===state.filter).sort((a,b)=>a.done-b.done||a.phase-b.phase||b.pts-a.pts);
+  $('#planList').innerHTML=list.map(a=>{const eur=kE(a.pts*0.02*EBE*2.4);return '<label class="row'+(a.done?' done':'')+'"><input type="checkbox" class="check" id="act'+a.id+'" '+(a.done?'checked':'')+'><div><div class="t">'+a.t+'</div><div class="d">'+a.d+'</div><div class="small muted" style="margin-top:4px">'+AXES.find(x=>x.id===a.axis).name+' · Phase '+a.phase+'</div></div><div class="impact">+'+eur+'<small>+'+a.pts+' pts sur l’axe</small></div></label>'}).join('');
+  $('#planList').querySelectorAll('input').forEach(i=>i.onchange=()=>{const a=ACTIONS.find(x=>'act'+x.id===i.id);a.done=i.checked;persist();renderAll();toast(a.done?'Action faite. +'+a.pts+' pts sur « '+AXES.find(x=>x.id===a.axis).name+' ».':'Action réouverte.')});
+  const done=ACTIONS.filter(a=>a.done).length;$('#planSummary').textContent=done+' faites · '+(ACTIONS.length-done)+' restantes';
+}
+function renderSavoir(){
+  $('#procList').innerHTML=PROCS.map(p=>{const pct=Math.round(p.cov*100);const pill=pct===100?'<span class="pill good"><i></i>Validé</span>':pct===0?'<span class="pill crit"><i></i>À faire</span>':'<span class="pill warn"><i></i>'+pct+' %</span>';return '<div class="proc"><div><div class="t">'+p.t+'</div><div class="d">'+p.d+' · '+p.owner+'</div></div><div class="cov"><i style="width:'+pct+'%"></i></div>'+pill+'</div>'}).join('');
+  const cov=Math.round(PROCS.reduce((t,p)=>t+p.cov,0)/PROCS.length*100);$('#procPill').className='pill '+(cov>=80?'good':cov>=40?'warn':'crit');$('#procPill').innerHTML='<i></i>'+cov+' % documenté';
+}
+function drStats(){let n=0,ok=0,missing=[];TREE.forEach(f=>f.docs.forEach(d=>{n++;if(d[1]==='à jour')ok++;else missing.push(d[0])}));return {pct:Math.round(ok/n*100),missing,n}}
+function renderDataroom(){
+  const st=drStats();$('#drPct').textContent=st.pct+' %';$('#drMissing').textContent=st.missing.length+' documents à compléter';
+  $('#tree').innerHTML=TREE.map(f=>{const ok=f.docs.filter(d=>d[1]==='à jour').length;return '<div class="folder"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>'+f.f+'<span class="cnt">'+ok+' / '+f.docs.length+'</span></div><div class="docs">'+f.docs.map(d=>{const cls=d[1]==='à jour'?'good':d[1]==='périmé'?'warn':'crit';const lab=d[1]==='à jour'?'À jour':d[1]==='périmé'?'À renouveler':'Manquant';return '<div class="doc"><div>'+d[0]+(d[2]?' <span class="meta">· '+d[2]+'</span>':'')+'</div><span class="pill '+cls+'"><i></i>'+lab+'</span></div>'}).join('')+'</div>'}).join('');
+}
+const BUYERS=[
+ {n:'Repreneur individuel · T. Marchal',t:'Ex-directeur de production, financement validé',st:0},
+ {n:'Menuiseries du Lez',t:'Croissance externe, 34 salariés',st:1},
+ {n:'Lucas Ferrer (salarié)',t:'Reprise interne, dossier Bpifrance en cours',st:2},
+ {n:'Groupe Occibois',t:'Consolidateur régional',st:1},
+ {n:'Fonds Transmission Occitanie',t:'Fonds local, ticket 300–800 k€',st:0},
+];
+const STAGES=['Contact','NDA signé','Dossier reçu','Visite','Offre'];
+function renderCession(){
+  $('#pipe').innerHTML=STAGES.map((s,i)=>'<div class="col"><h4>'+s+'<span class="num">'+BUYERS.filter(b=>b.st===i).length+'</span></h4>'+BUYERS.filter(b=>b.st===i).map(b=>'<div class="buyer"><b>'+b.n+'</b><div class="type">'+b.t+'</div><div class="acts">'+(i>0?'<button data-m="-1" data-b="'+BUYERS.indexOf(b)+'">←</button>':'')+(i<4?'<button data-m="1" data-b="'+BUYERS.indexOf(b)+'">Avancer →</button>':'')+'</div></div>').join('')+'</div>').join('');
+  $('#pipe').querySelectorAll('button').forEach(b=>b.onclick=()=>{BUYERS[+b.dataset.b].st+=+b.dataset.m;renderCession();toast('Étape mise à jour.')});
+  $('#pipeCount').textContent=BUYERS.length+' repreneurs suivis';
+  $('#pipeVeil').hidden=state.cession;$('#pipeCard').classList.toggle('locked',!state.cession);
+  const btn=$('#cessionToggle');btn.textContent=state.cession?'Désactiver le mode cession':'Activer le mode cession';btn.className='btn '+(state.cession?'':'primary');
+}
+function renderAll(){renderCockpit();renderPlan();renderSavoir();renderDataroom();renderCession()}
+
+/* ---------- Quiz ---------- */
+function renderQuiz(){
+  const i=state.q,q=QUIZ[i];$('#qStep').textContent=(i+1)+' / '+QUIZ.length;$('#qBar').style.width=((i+1)/QUIZ.length*100)+'%';$('#qAxis').textContent=AXES.find(a=>a.id===q.ax).name;$('#qText').textContent=q.q;
+  $('#qOpts').innerHTML=q.o.map((o,k)=>'<button class="opt" aria-pressed="'+(state.quiz[i]===k)+'" data-k="'+k+'"><span class="k">'+String.fromCharCode(65+k)+'</span>'+o+'</button>').join('');
+  $('#qOpts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{state.quiz[i]=+b.dataset.k;renderQuiz()});
+  $('#qPrev').disabled=i===0;$('#qNext').textContent=i===QUIZ.length-1?'Voir mon résultat':'Suivant';$('#qNext').disabled=state.quiz[i]===null;
+}
+function finishQuiz(){
+  const per={};AXES.forEach(a=>per[a.id]=[]);QUIZ.forEach((q,i)=>per[q.ax].push(q.s[state.quiz[i]]));
+  AXES.forEach(a=>state.axes[a.id]=Math.round(per[a.id].reduce((t,v)=>t+v,0)/per[a.id].length));
+  ACTIONS.forEach(a=>a.done=false);persist();renderAll();
+  const s=score(),v=valuation(s);$('#scoreBig2').textContent=s;gauge('#gaugeFill2',s);$('#valBig2').textContent=fmtRange(v);
+  $('#resultText').textContent='Soit un multiple de '+fmt1(v.m)+'× votre EBE normalisé. Une entreprise du même secteur notée 80 se vendrait autour de '+kE(valuation(80).mid)+'.';
+  const weak=AXES.map(a=>({a,s:axisScore(a.id)})).sort((x,y)=>x.s-y.s).slice(0,3);
+  $('#top3').innerHTML=weak.map(w=>{const act=ACTIONS.filter(x=>x.axis===w.a.id).sort((x,y)=>y.pts-x.pts)[0];return '<li><b>'+w.a.name+'</b> ('+w.s+'/100) · '+act.t.toLowerCase()+'</li>'}).join('');
+  $('#quiz').hidden=true;$('#quizResult').hidden=false;window.scrollTo({top:0,behavior:'smooth'});
+}
+$('#qPrev').onclick=()=>{state.q--;renderQuiz()};
+$('#qNext').onclick=()=>{if(state.q<QUIZ.length-1){state.q++;renderQuiz()}else finishQuiz()};
+$('#qRedo').onclick=()=>{state.q=0;state.quiz.fill(null);$('#quiz').hidden=false;$('#quizResult').hidden=true;renderQuiz()};
+
+/* ---------- Interactions ---------- */
+$('#ansSend').onclick=()=>{
+  const txt=$('#ans').value.trim();if(!txt){toast('Écrivez ou dictez votre réponse d’abord.');return}
+  const iv=$('#interview');const me=document.createElement('div');me.className='bubble me';me.innerHTML='<div class="who">Jean-Marc</div>'+txt.replace(/</g,'&lt;');iv.appendChild(me);
+  const r=document.createElement('div');r.className='bubble';r.innerHTML='<div class="who">Relève</div>Merci. J’ai de quoi rédiger la fiche. Relisez-la ci-dessous et corrigez ce qui ne vous ressemble pas.';iv.appendChild(r);
+  $('#sopList').innerHTML=['Nadia prend l’appel, qualifie le besoin (pièce, budget, délai) et crée la fiche client.','Visite sur site sous 7 jours. Prise de cotes par Jean-Marc (à déléguer à Lucas).','Chiffrage à l’atelier : matière au tarif fournisseur du mois + main-d’œuvre au barème interne + marge cible 32 %.','Devis envoyé sous 5 jours ouvrés, acompte de 30 % à la commande.','Relance téléphonique à J+10 si pas de réponse.'].map(s=>'<li>'+s+'</li>').join('');
+  $('#sop').hidden=false;$('#ans').value='';PROCS[0].cov=.7;renderSavoir();
+};
+$('#ansDictate').onclick=()=>{$('#ans').value='Je rentre à l’atelier, je chiffre la matière avec le tarif fournisseur du mois, j’ajoute la main-d’œuvre au barème et je prends 32 % de marge. Le client a son devis sous cinq jours, avec 30 % d’acompte à la commande. Si pas de nouvelles à dix jours, Nadia relance.';toast('Dictée simulée dans la maquette.')};
+$('#sopAccept').onclick=()=>{PROCS[0].cov=1;TREE[4].docs[0][2]='4 fiches validées';renderAll();toast('Fiche validée. Savoir-faire : +1 processus.');$('#sop').hidden=true};
+$('#sopAddAction').onclick=()=>{ACTIONS.find(a=>a.id===1).done=false;toast('L’action « Déléguer la prise de cotes » est déjà dans votre plan.')};
+$('#drInvite').onclick=()=>{const t=$('#tiers');const d=document.createElement('div');d.className='tier';d.innerHTML='<span class="avatar">BC</span><div><b>Bruno C.</b><div class="r">Conseil transmission · Lecture seule</div></div><span class="pill neutral" style="margin-left:auto">Invitation envoyée</span>';t.appendChild(d);toast('Invitation envoyée par e-mail avec accès limité.')};
+function toggleCession(){state.cession=!state.cession;persist();renderCession();toast(state.cession?'Mode cession activé. Vos tiers de confiance sont prévenus.':'Mode cession désactivé.')}
+$('#cessionToggle').onclick=toggleCession;$('#cessionToggle2').onclick=toggleCession;
+$('#teaserCopy').onclick=()=>{const txt=document.querySelector('.teaser').innerText;const done=()=>toast('Teaser copié.');try{navigator.clipboard.writeText(txt).then(done).catch(()=>{const r=document.createRange();r.selectNodeContents(document.querySelector('.teaser'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Texte sélectionné, copiez-le.')})}catch(e){toast('Sélectionnez le texte pour le copier.')}};
+
+/* ---------- Routing ---------- */
+const VIEWS=['cockpit','plan','savoir','dataroom','cession','score'];
+function show(v){if(!VIEWS.includes(v))v='cockpit';VIEWS.forEach(x=>$('#view-'+x).hidden=x!==v);document.querySelectorAll('[data-view]').forEach(b=>{if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);window.scrollTo({top:0});if(v==='score'&&$('#quizResult').hidden)renderQuiz()}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+addEventListener('hashchange',()=>show(location.hash.slice(1)));
+renderAll();renderQuiz();show(location.hash.slice(1)||'cockpit');
+})();
+</script>
