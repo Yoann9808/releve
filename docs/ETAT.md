@@ -36,18 +36,18 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 
 ## En cours
 
-- **Branche `feat/resultat-email`, PR en brouillon** : étape A « recevoir son résultat par e-mail », code terminé (session Claude Code du 8 nov. 2026). Tests, types et build passent en local. **Ne pas merger** tant que Supabase et Resend ne sont pas configurés : sans eux, le formulaire affiche une erreur en production. **Agents : ne pas reprendre ce sujet**, il est piloté par Yoann dans Claude Code.
+- **PR #4 `feat/resultat-email`, prête à merger après la Revue Qualité** : étape A « recevoir son résultat par e-mail ». Testée de bout en bout par Yoann sur la preview le 8 nov. 2026 (e-mail reçu, lien `/r/` fonctionnel, ligne en base). Variables Vercel posées en Preview et Production. Base nettoyée des tests. **Agents : Qualité relit la PR ; Développeur ne reprend pas ce sujet.**
 
 ## Backlog, état au 8 novembre
 
 - **Validée, à spécifier par l'agent Produit** : « Transformer mon score en plan d'actions à 3 ans » (P0), « Repérer les points qui bloqueront une reprise » (P0 ; une version préliminaire des alertes existe déjà dans `lib/score/engine.ts`, à aligner sur la spec).
 - **À valider** : savoir-faire par entretien vocal (P1), pré-audit comptes et contrats (P1), fourchette de valeur de marché (P1), data room au fil de l'eau (P1), vue cabinet / territoire pour prescripteurs (P1), garder le cap pendant la négociation (P2).
 
-## Prochaine étape décidée avec Yoann : recevoir son résultat par e-mail
+## Recevoir son résultat par e-mail
 
 Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée en deux :
 
-**Étape A : codée, en attente des prérequis** (branche `feat/resultat-email`) :
+**Étape A : terminée et validée par Yoann le 8 nov. 2026** (PR #4, à merger) :
 - `POST /api/resultat` (`app/api/resultat/route.ts`) : lien de l’e-mail construit par `lib/resultat/url.ts` (preview → adresse de la branche, production → domaine de production) ; valide e-mail, contexte et 26 réponses (`lib/resultat/validation.ts`), ignore tout score envoyé par le navigateur et recalcule, crée un jeton de 256 bits (`lib/resultat/token.ts`), enregistre dans Supabase, envoie l'e-mail Resend (`lib/resultat/email.ts`). Si l'e-mail échoue, la ligne est supprimée. Champ piège anti-robots.
 - Page `/r/[token]` : résultat en lecture seule (photo figée), noindex, no-referrer, no-store ; « Ce lien n'est plus actif » si jeton inconnu, mal formé ou révoqué.
 - Table `resultats` : migration `supabase/migrations/20261108000000_resultats.sql`, **appliquée le 8 nov. 2026** sur `releve`. Colonnes ajoutées à la spec : `resultat jsonb` (photo figée) et `revoque_le timestamptz`. RLS activée sans politique : seul le serveur (clé secrète) y accède.
@@ -55,15 +55,22 @@ Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée
 - `email_submitted` émis après envoi réussi (sans l'adresse). Rien ne part avant le clic.
 - Variables : `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, `RESEND_FROM`, et `SITE_URL` facultative (voir `.env.example`).
 
-**Pour finir l'étape A, dans l'ordre** : 1) ~~créer le projet Supabase `releve`~~ fait ; 2) ~~appliquer la migration~~ fait ; 3) compte Resend + clé ; 4) variables dans Vercel ; 5) test de bout en bout sur la preview de la PR ; 6) sortir la PR du brouillon, puis merge.
+**Après le merge de la PR #4** : vérifier en production avec l'adresse du compte Resend, puis supprimer la ligne de test dans `resultats`.
 
 **Décisions du 8 nov. 2026 (Notion, Décisions produit)** : la page `/r/` montre une photo figée du résultat (pas de recalcul) ; aucune dépendance ajoutée à l'étape A (appels HTTP directs).
 
-**Points ouverts** : Resend héberge hors de France (UE/US), à arbitrer au regard du rail « hébergement en France » ; pas de limite d'envois par visiteur hors champ piège (pare-feu Vercel si abus).
+**Points ouverts, à faire avant les premiers vrais dirigeants** :
+- **Domaine Resend** : les e-mails partent de `onboarding@resend.dev`, arrivent en indésirables et ne peuvent aller qu'à l'adresse du compte Resend. Il faut vérifier un domaine à Relève (à fournir par Yoann).
+- **`releve-staging`** : un second projet Supabase pour les previews. Aujourd'hui, preview et production écrivent dans la même base.
+- **Resend héberge hors de France** (UE/US) : à arbitrer dans une Décision produit au regard du rail « hébergement en France ».
+- Pas de limite d'envois par visiteur hors champ piège (pare-feu Vercel si abus).
 
 **Étape B (feature suivante)** : lien magique Supabase Auth qui rattache le résultat à un compte, historique des scores, lien de partage révocable (spec 2.5 à 2.7).
 
-**Prérequis côté Yoann restants** : créer un compte Resend et mettre la clé dans Vercel, avec les variables Supabase (voir `.env.example`).
+## Prochaine étape recommandée (à confirmer par Yoann)
+
+- **Avec Yoann dans Claude Code** : étape B (lien magique Supabase Auth, historique des scores, lien de partage révocable, spec 2.5 à 2.7). C'est la fondation du suivi de progression.
+- **Agents nocturnes** : continuer sur les deux P0 du backlog (spec par Produit, puis code par Développeur).
 
 ## Pièges connus
 
