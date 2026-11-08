@@ -14,7 +14,7 @@ Mis à jour le 8 novembre 2026 (fin de session Claude Code). Ce fichier est la p
 | Journal des agents | Notion, `collection://629f6e90-382d-455b-ba45-ecc0d1868ff2` |
 | Espace Notion racine | https://app.notion.com/p/40f486abaa2b81a79377f57fbda0944d |
 | Comptes rendus | Slack Alturia AI, canal #releve-agents (`C0CFBJM6DB3`) |
-| Supabase | Organisation Alturia AI (`kufynspyfxcbebbgvrop`). Pas encore de projet `releve` : le forfait gratuit est au maximum (2 projets en pause, OOTI et leadbip). |
+| Supabase | Organisation Alturia AI (`kufynspyfxcbebbgvrop`), projet `releve` (`qgcufrjyactycvkwyfxq`, eu-west-3 Paris), créé le 8 nov. 2026. Identifiants à vérifier dans `CONNECTORS.md` avant toute écriture. |
 | Maquette de référence | `prototype/releve-maquette.html` |
 
 ## Agents nocturnes (tâches planifiées claude.ai, lundi à samedi)
@@ -50,12 +50,12 @@ Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée
 **Étape A : codée, en attente des prérequis** (branche `feat/resultat-email`) :
 - `POST /api/resultat` (`app/api/resultat/route.ts`) : valide e-mail, contexte et 26 réponses (`lib/resultat/validation.ts`), ignore tout score envoyé par le navigateur et recalcule, crée un jeton de 256 bits (`lib/resultat/token.ts`), enregistre dans Supabase, envoie l'e-mail Resend (`lib/resultat/email.ts`). Si l'e-mail échoue, la ligne est supprimée. Champ piège anti-robots.
 - Page `/r/[token]` : résultat en lecture seule (photo figée), noindex, no-referrer, no-store ; « Ce lien n'est plus actif » si jeton inconnu, mal formé ou révoqué.
-- Table `resultats` : migration `supabase/migrations/20261108000000_resultats.sql`, **pas encore appliquée**. Colonnes ajoutées à la spec : `resultat jsonb` (photo figée) et `revoque_le timestamptz`. RLS activée sans politique : seul le serveur (clé secrète) y accède.
+- Table `resultats` : migration `supabase/migrations/20261108000000_resultats.sql`, **appliquée le 8 nov. 2026** sur `releve`. Colonnes ajoutées à la spec : `resultat jsonb` (photo figée) et `revoque_le timestamptz`. RLS activée sans politique : seul le serveur (clé secrète) y accède.
 - Supabase et Resend sont appelés par HTTP direct (`lib/resultat/serveur.ts`), sans SDK.
 - `email_submitted` émis après envoi réussi (sans l'adresse). Rien ne part avant le clic.
 - Variables : `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `RESEND_FROM`, et `SITE_URL` facultative (voir `.env.example`).
 
-**Pour finir l'étape A, dans l'ordre** : 1) créer le projet Supabase `releve` (eu-west-3) ; 2) appliquer la migration ; 3) compte Resend + clé ; 4) variables dans Vercel ; 5) test de bout en bout sur la preview de la PR ; 6) sortir la PR du brouillon, puis merge.
+**Pour finir l'étape A, dans l'ordre** : 1) ~~créer le projet Supabase `releve`~~ fait ; 2) ~~appliquer la migration~~ fait ; 3) compte Resend + clé ; 4) variables dans Vercel ; 5) test de bout en bout sur la preview de la PR ; 6) sortir la PR du brouillon, puis merge.
 
 **Décisions du 8 nov. 2026 (Notion, Décisions produit)** : la page `/r/` montre une photo figée du résultat (pas de recalcul) ; aucune dépendance ajoutée à l'étape A (appels HTTP directs).
 
@@ -63,7 +63,7 @@ Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée
 
 **Étape B (feature suivante)** : lien magique Supabase Auth qui rattache le résultat à un compte, historique des scores, lien de partage révocable (spec 2.5 à 2.7).
 
-**Prérequis côté Yoann, bloquant au 8 nov. 2026** : Supabase demande de payer pour un troisième projet (forfait gratuit plein : OOTI et leadbip en pause). À trancher : passer en Pro, ou supprimer un projet existant. Puis créer `releve` en `eu-west-3` (Paris). Créer un compte Resend et mettre la clé dans Vercel.
+**Prérequis côté Yoann restants** : créer un compte Resend et mettre la clé dans Vercel, avec les variables Supabase (voir `.env.example`).
 
 ## Pièges connus
 
