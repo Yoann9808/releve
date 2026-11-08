@@ -53,7 +53,7 @@ Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée
 - Table `resultats` : migration `supabase/migrations/20261108000000_resultats.sql`, **appliquée le 8 nov. 2026** sur `releve`. Colonnes ajoutées à la spec : `resultat jsonb` (photo figée) et `revoque_le timestamptz`. RLS activée sans politique : seul le serveur (clé secrète) y accède.
 - Supabase et Resend sont appelés par HTTP direct (`lib/resultat/serveur.ts`), sans SDK.
 - `email_submitted` émis après envoi réussi (sans l'adresse). Rien ne part avant le clic.
-- Variables : `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `RESEND_FROM`, et `SITE_URL` facultative (voir `.env.example`).
+- Variables : `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, `RESEND_FROM`, et `SITE_URL` facultative (voir `.env.example`).
 
 **Pour finir l'étape A, dans l'ordre** : 1) ~~créer le projet Supabase `releve`~~ fait ; 2) ~~appliquer la migration~~ fait ; 3) compte Resend + clé ; 4) variables dans Vercel ; 5) test de bout en bout sur la preview de la PR ; 6) sortir la PR du brouillon, puis merge.
 

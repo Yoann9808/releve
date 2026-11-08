@@ -1,7 +1,7 @@
 /**
  * Accès serveur à Supabase (API REST) et à Resend, par appels HTTP directs, sans SDK
  * (décision du 8 nov. 2026 : aucune dépendance ajoutée à l'étape A).
- * Ce module lit SUPABASE_SERVICE_ROLE_KEY : il ne doit jamais être importé par un composant client.
+ * Ce module lit SUPABASE_SECRET_KEY : il ne doit jamais être importé par un composant client.
  */
 import type { Contexte, Reponses, Resultat } from '../score/engine.ts';
 
@@ -15,7 +15,7 @@ function env(nom: string): string {
 
 function supabase() {
   const url = env('NEXT_PUBLIC_SUPABASE_URL').replace(/\/$/, '');
-  const cle = env('SUPABASE_SERVICE_ROLE_KEY');
+  const cle = env('SUPABASE_SECRET_KEY');
   const headers: Record<string, string> = { apikey: cle, 'Content-Type': 'application/json' };
   // Les anciennes clés (JWT) passent aussi en Authorization ; les nouvelles (sb_secret_…) seulement en apikey.
   if (!cle.startsWith('sb_')) headers.Authorization = `Bearer ${cle}`;

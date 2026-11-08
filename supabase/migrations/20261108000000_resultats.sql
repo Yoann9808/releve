@@ -1,7 +1,7 @@
 -- Résultats enregistrés par e-mail (spec « Obtenir mon score seul » §2.5, étape A).
 -- À appliquer sur le projet Supabase `releve` (région eu-west-3, Paris).
 --
--- Accès : uniquement par la clé service_role, depuis le serveur Next.js.
+-- Accès : uniquement par la clé secrète (Secret key, sb_secret_…), depuis le serveur Next.js.
 -- RLS est activée sans aucune politique : les clés anon / publishable ne lisent ni n'écrivent rien.
 
 create table if not exists public.resultats (
