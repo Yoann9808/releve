@@ -12,10 +12,10 @@
     "test": "node --experimental-strip-types --test \"lib/**/*.test.ts\""
   },
   "engines": {
-    "node": ">=22.6"
+    "node": "22.x"
   },
   "dependencies": {
-    "next": "15.5.6",
+    "next": "15.5.7",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
