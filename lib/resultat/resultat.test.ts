@@ -5,6 +5,7 @@ import { calculerResultat, type Reponse, type Reponses } from '../score/engine.t
 import { normaliserEmail, validerContexte, validerDemande, validerReponses } from './validation.ts';
 import { nouveauToken, tokenBienForme } from './token.ts';
 import { contenuEmail, echapper } from './email.ts';
+import { urlDuSite } from './url.ts';
 
 const toutes = (r: Reponse): Record<string, Reponse> => Object.fromEntries(QUESTIONS.map((q) => [q.id, r]));
 const CTX = { secteur: 'Bâtiment et travaux', effectif: '3 à 9 salariés', chiffre: '300 k€ à 1 M€' };
@@ -119,4 +120,29 @@ test('e-mail de résultat : pas de décote si l’entreprise ne dépend pas de v
 
 test('e-mail de résultat : le HTML est échappé', () => {
   assert.equal(echapper(`<a href="x">'&'</a>`), '&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;');
+});
+
+// --- Adresse du lien /r/<token> ---
+
+const LOCAL = 'http://localhost:3000';
+const PROD = 'releve.vercel.app';
+const BRANCHE = 'releve-git-feat-x.vercel.app';
+
+test('lien : SITE_URL l’emporte toujours (slash final retiré)', () => {
+  assert.equal(urlDuSite({ SITE_URL: 'https://releve.fr/', VERCEL_ENV: 'preview', VERCEL_BRANCH_URL: BRANCHE }, LOCAL), 'https://releve.fr');
+});
+
+test('lien : en production, domaine de production', () => {
+  assert.equal(urlDuSite({ VERCEL_ENV: 'production', VERCEL_PROJECT_PRODUCTION_URL: PROD, VERCEL_URL: 'x.vercel.app' }, LOCAL), `https://${PROD}`);
+});
+
+test('lien : sur une preview, l’adresse de la branche et jamais la production (bug du 8 nov. 2026)', () => {
+  const env = { VERCEL_ENV: 'preview', VERCEL_PROJECT_PRODUCTION_URL: PROD, VERCEL_BRANCH_URL: BRANCHE, VERCEL_URL: 'x.vercel.app' };
+  assert.equal(urlDuSite(env, LOCAL), `https://${BRANCHE}`);
+  assert.equal(urlDuSite({ ...env, VERCEL_BRANCH_URL: undefined }, LOCAL), 'https://x.vercel.app');
+});
+
+test('lien : en local, l’adresse de la requête', () => {
+  assert.equal(urlDuSite({}, LOCAL), LOCAL);
+  assert.equal(urlDuSite({ VERCEL_ENV: 'development', VERCEL_PROJECT_PRODUCTION_URL: PROD }, `${LOCAL}/`), LOCAL);
 });

@@ -48,7 +48,7 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée en deux :
 
 **Étape A : codée, en attente des prérequis** (branche `feat/resultat-email`) :
-- `POST /api/resultat` (`app/api/resultat/route.ts`) : valide e-mail, contexte et 26 réponses (`lib/resultat/validation.ts`), ignore tout score envoyé par le navigateur et recalcule, crée un jeton de 256 bits (`lib/resultat/token.ts`), enregistre dans Supabase, envoie l'e-mail Resend (`lib/resultat/email.ts`). Si l'e-mail échoue, la ligne est supprimée. Champ piège anti-robots.
+- `POST /api/resultat` (`app/api/resultat/route.ts`) : lien de l’e-mail construit par `lib/resultat/url.ts` (preview → adresse de la branche, production → domaine de production) ; valide e-mail, contexte et 26 réponses (`lib/resultat/validation.ts`), ignore tout score envoyé par le navigateur et recalcule, crée un jeton de 256 bits (`lib/resultat/token.ts`), enregistre dans Supabase, envoie l'e-mail Resend (`lib/resultat/email.ts`). Si l'e-mail échoue, la ligne est supprimée. Champ piège anti-robots.
 - Page `/r/[token]` : résultat en lecture seule (photo figée), noindex, no-referrer, no-store ; « Ce lien n'est plus actif » si jeton inconnu, mal formé ou révoqué.
 - Table `resultats` : migration `supabase/migrations/20261108000000_resultats.sql`, **appliquée le 8 nov. 2026** sur `releve`. Colonnes ajoutées à la spec : `resultat jsonb` (photo figée) et `revoque_le timestamptz`. RLS activée sans politique : seul le serveur (clé secrète) y accède.
 - Supabase et Resend sont appelés par HTTP direct (`lib/resultat/serveur.ts`), sans SDK.

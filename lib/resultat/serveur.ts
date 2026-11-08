@@ -75,10 +75,3 @@ export async function envoyerEmail(a: string, contenu: { sujet: string; html: st
   });
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }
-
-/** Adresse publique du site pour le lien de l'e-mail (jamais dérivée d'un en-tête de la requête en production). */
-export function urlDuSite(origineRequete: string): string {
-  if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '');
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  return origineRequete;
-}

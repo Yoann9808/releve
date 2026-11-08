@@ -8,7 +8,8 @@ import { calculerResultat } from '@/lib/score/engine.ts';
 import { validerDemande } from '@/lib/resultat/validation.ts';
 import { nouveauToken } from '@/lib/resultat/token.ts';
 import { contenuEmail } from '@/lib/resultat/email.ts';
-import { enregistrerResultat, envoyerEmail, supprimerResultat, urlDuSite } from '@/lib/resultat/serveur.ts';
+import { enregistrerResultat, envoyerEmail, supprimerResultat } from '@/lib/resultat/serveur.ts';
+import { urlDuSite } from '@/lib/resultat/url.ts';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
   // Jamais de confiance dans un score envoyé par le navigateur : on recalcule.
   const resultat = calculerResultat(reponses, contexte);
   const token = nouveauToken();
-  const lien = `${urlDuSite(new URL(req.url).origin)}/r/${token}`;
+  const lien = `${urlDuSite(process.env, new URL(req.url).origin)}/r/${token}`;
 
   try {
     await enregistrerResultat({
