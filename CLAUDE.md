@@ -35,3 +35,11 @@ La maquette `prototype/releve-maquette.html` est la référence d'identité visu
 ## Style de code
 
 TypeScript strict. Composants simples, pas d'abstraction prématurée. Textes d'interface en français, tutoiement proscrit (on vouvoie le dirigeant). Formats français : `1 420 k€`, dates `12 oct. 2026`.
+
+## Quand Yoann travaille dans Claude Code (VS Code)
+
+Yoann pilote le produit, il ne code pas lui-même. Dans Claude Code, il te demandera de construire, corriger ou expliquer. Les mêmes rails s'appliquent à toi qu'aux agents nocturnes, avec une différence : Yoann est présent, donc pose-lui la question quand un arbitrage produit se présente, au lieu de le marquer « À valider ». Quand il tranche, enregistre la décision dans Notion (Décisions produit) pour que les agents la respectent.
+
+Avant de commencer une tâche, lis `docs/ETAT.md` : c'est l'état du projet, les identifiants Notion et la prochaine étape. Mets-le à jour à la fin de chaque session qui change l'état du projet.
+
+Les agents nocturnes (Veille, Produit, Développeur, Qualité) continuent de tourner pendant que Yoann travaille dans Claude Code. Pour éviter de coder la même feature qu'eux : vérifie les PR ouvertes et les features « En revue » avant de commencer, et si tu prends une feature, passe-la toi-même en « En revue » dans Notion dès que ta PR est ouverte.
