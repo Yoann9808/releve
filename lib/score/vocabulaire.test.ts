@@ -22,7 +22,14 @@ function fichiers(dir: string, out: string[] = []): string[] {
 
 test('aucun mot lié à la vente dans le questionnaire ni dans les écrans', () => {
   const racine = join(import.meta.dirname, '..', '..');
-  const cibles = [join(racine, 'lib', 'score'), join(racine, 'app', 'score'), join(racine, 'components')];
+  const cibles = [
+    join(racine, 'lib', 'score'),
+    join(racine, 'lib', 'resultat'),
+    join(racine, 'app', 'score'),
+    join(racine, 'app', 'r'),
+    join(racine, 'app', 'api', 'resultat'),
+    join(racine, 'components'),
+  ];
   const fautes: string[] = [];
   for (const dir of cibles) {
     let liste: string[] = [];

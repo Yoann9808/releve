@@ -104,7 +104,7 @@ export function Questionnaire() {
   if (!pret) return <p className="muted">Chargement…</p>;
 
   if (resultat) {
-    return <Resultat resultat={resultat} contexte={contexte} onRecommencer={recommencer} />;
+    return <Resultat resultat={resultat} contexte={contexte} reponses={reponses} onRecommencer={recommencer} />;
   }
 
   // Étape 0 : contexte

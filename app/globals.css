@@ -274,7 +274,8 @@ a {
   gap: 12px;
   flex-wrap: wrap;
 }
-.select {
+.select,
+.input {
   width: 100%;
   font: inherit;
   padding: 14px 16px;
