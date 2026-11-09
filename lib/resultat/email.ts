@@ -1,5 +1,6 @@
 /**
- * Contenu de l'e-mail « Votre résultat Relève » : score, décote, trois actions, lien /r/<token>.
+ * Contenu des e-mails : « Votre résultat Relève » (score, décote, trois actions, lien magique vers
+ * l'espace) et « Votre lien de connexion ».
  * Fonction pure, testée dans email.test.ts. Le HTML reste sobre (styles en ligne, une colonne).
  */
 import type { Resultat } from '../score/engine.ts';
@@ -21,6 +22,41 @@ function ligneDecote(r: Resultat): string | null {
   return `Décote de valeur estimée liée à votre place dans l’entreprise : ${d.decote.fourchette} (dépendance ${d.decote.niveau}). Ordre de grandeur constaté par les experts-comptables, à confirmer avec le vôtre.`;
 }
 
+export const NOTE_LIEN =
+  'Ce lien vous connecte sans mot de passe. Il est personnel, ne sert qu’une fois et expire au bout de quelques heures : vous pourrez ensuite en demander un nouveau depuis la page de connexion de Relève.';
+const BOUTON =
+  'display:inline-block;background:#163f36;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:10px;font-size:16px;';
+const NOTE = 'margin:16px 0 0;font-size:14px;line-height:1.5;color:#4a5059;';
+
+function gabarit(sujet: string, corps: string): string {
+  return `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${echapper(sujet)}</title></head>
+<body style="margin:0;padding:0;background:#eeede8;font-family:Arial,Helvetica,sans-serif;">
+<div style="max-width:560px;margin:0 auto;padding:28px 20px;">
+<p style="margin:0 0 20px;font-family:Georgia,serif;font-size:22px;color:#163f36;">Relève</p>
+<div style="background:#ffffff;border:1px solid #dcdad3;border-radius:12px;padding:24px;">
+${corps}
+</div>
+</div>
+</body></html>`;
+}
+
+/** E-mail envoyé depuis la page de connexion : un lien, rien d'autre. */
+export function contenuEmailConnexion(lien: string): ContenuEmail {
+  const sujet = 'Votre lien de connexion à Relève';
+  const texte = ['Bonjour,', '', `Pour accéder à votre espace Relève : ${lien}`, '', NOTE_LIEN, '', 'Si vous n’avez rien demandé, ignorez cet e-mail.', '', 'Relève'].join('\n');
+  const p = 'margin:0 0 14px;font-size:16px;line-height:1.55;color:#1d2126;';
+  const html = gabarit(
+    sujet,
+    `<p style="${p}">Bonjour,</p>
+<p style="${p}">Voici votre lien pour accéder à votre espace Relève.</p>
+<p style="margin:20px 0 8px;"><a href="${echapper(lien)}" style="${BOUTON}">Accéder à mon espace</a></p>
+<p style="${NOTE}">${echapper(NOTE_LIEN)}</p>
+<p style="${NOTE}">Si vous n’avez rien demandé, ignorez cet e-mail.</p>`,
+  );
+  return { sujet, html, texte };
+}
+
 export function contenuEmail(r: Resultat, lien: string): ContenuEmail {
   const sujet = `Votre résultat Relève : ${r.scoreGlobal} / 100`;
   const decote = ligneDecote(r);
@@ -40,9 +76,9 @@ export function contenuEmail(r: Resultat, lien: string): ContenuEmail {
     'Par où commencer :',
     actionsTexte,
     '',
-    `Retrouver votre résultat complet : ${lien}`,
+    `Accéder à votre espace, où ce résultat est conservé : ${lien}`,
     '',
-    'Ce lien est personnel : toute personne qui le possède peut consulter ce résultat.',
+    NOTE_LIEN,
     '',
     'Relève',
   ].join('\n');
@@ -70,8 +106,8 @@ export function contenuEmail(r: Resultat, lien: string): ContenuEmail {
 ${decote ? `<p style="${p}">${echapper(decote)}</p>` : ''}
 <p style="margin:22px 0 10px;font-size:17px;font-weight:bold;color:#1d2126;">Par où commencer</p>
 ${actionsHtml}
-<p style="margin:24px 0 8px;"><a href="${echapper(lien)}" style="display:inline-block;background:#163f36;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:10px;font-size:16px;">Retrouver mon résultat complet</a></p>
-<p style="margin:16px 0 0;font-size:14px;line-height:1.5;color:#4a5059;">Ce lien est personnel : toute personne qui le possède peut consulter ce résultat.</p>
+<p style="margin:24px 0 8px;"><a href="${echapper(lien)}" style="${BOUTON}">Accéder à mon espace</a></p>
+<p style="${NOTE}">${echapper(NOTE_LIEN)}</p>
 </div>
 </div>
 </body></html>`;

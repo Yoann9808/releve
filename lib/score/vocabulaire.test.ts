@@ -27,6 +27,9 @@ test('aucun mot lié à la vente dans le questionnaire ni dans les écrans', () 
     join(racine, 'lib', 'resultat'),
     join(racine, 'app', 'score'),
     join(racine, 'app', 'r'),
+    join(racine, 'app', 'connexion'),
+    join(racine, 'app', 'espace'),
+    join(racine, 'lib', 'compte'),
     join(racine, 'app', 'api', 'resultat'),
     join(racine, 'components'),
   ];
