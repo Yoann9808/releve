@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { Contexte, Resultat as ResultatType } from '@/lib/score/engine.ts';
+import type { Contexte, Reponses, Resultat as ResultatType } from '@/lib/score/engine.ts';
 import { track } from '@/lib/analytics.ts';
+import { EnregistrerResultat } from './EnregistrerResultat';
 
 function Jauge({ valeur, legende, brass = false }: { valeur: number; legende: string; brass?: boolean }) {
   const c = 2 * Math.PI * 52;
@@ -20,20 +21,27 @@ function Jauge({ valeur, legende, brass = false }: { valeur: number; legende: st
   );
 }
 
+/**
+ * Écran de résultat. Sans `onRecommencer` (page /r/<token>), il est en lecture seule :
+ * ni formulaire d'enregistrement, ni bouton « Refaire le point », ni événement analytics.
+ */
 export function Resultat({
   resultat,
   contexte,
+  reponses,
   onRecommencer,
 }: {
   resultat: ResultatType;
   contexte: Contexte;
-  onRecommencer: () => void;
+  reponses?: Reponses;
+  onRecommencer?: () => void;
 }) {
   const { dependance: dep } = resultat;
+  const lectureSeule = !onRecommencer;
 
   useEffect(() => {
-    track('dependency_block_viewed', { indice: dep.indice });
-  }, [dep.indice]);
+    if (!lectureSeule) track('dependency_block_viewed', { indice: dep.indice });
+  }, [dep.indice, lectureSeule]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -70,7 +78,8 @@ export function Resultat({
           <details
             style={{ marginTop: 18 }}
             onToggle={(e) => {
-              if ((e.currentTarget as HTMLDetailsElement).open) track('dependency_action_opened', { indice: dep.indice });
+              if (!lectureSeule && (e.currentTarget as HTMLDetailsElement).open)
+                track('dependency_action_opened', { indice: dep.indice });
             }}
           >
             <summary>Comment réduire cette dépendance</summary>
@@ -166,21 +175,16 @@ export function Resultat({
         </section>
       )}
 
-      {/* Enregistrement : à venir (Supabase + Resend, PR suivante) */}
-      <section className="card ink no-print">
-        <p className="eyebrow">Garder ce résultat et recevoir mon plan</p>
-        <h3 style={{ color: '#fff', marginTop: 6 }}>Bientôt disponible</h3>
-        <p className="muted" style={{ marginTop: 8 }}>
-          Vous pourrez enregistrer ce résultat avec votre adresse e-mail, sans mot de passe, et le retrouver pour
-          suivre votre progression. En attendant, vous pouvez l’imprimer ou l’enregistrer en PDF depuis votre
-          navigateur.
-        </p>
-      </section>
+      {!lectureSeule && reponses && <EnregistrerResultat contexte={contexte} reponses={reponses} />}
 
       <div className="q-nav no-print">
-        <button className="btn" id="btn-recommencer" onClick={onRecommencer}>
-          Refaire le point
-        </button>
+        {onRecommencer ? (
+          <button className="btn" id="btn-recommencer" onClick={onRecommencer}>
+            Refaire le point
+          </button>
+        ) : (
+          <span className="small muted">Pour l’imprimer ou l’enregistrer en PDF, utilisez le menu de votre navigateur.</span>
+        )}
         <span className="small muted" style={{ alignSelf: 'center' }}>
           {contexte.secteur} · {contexte.effectif}
         </span>

@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
         source: '/score/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
+      {
+        // Résultat enregistré : jamais indexé, jamais mis en cache partagé, le jeton ne fuit pas en Referer.
+        source: '/r/:path*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+          { key: 'Cache-Control', value: 'private, no-store' },
+        ],
+      },
     ];
   },
 };

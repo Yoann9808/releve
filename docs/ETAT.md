@@ -1,6 +1,6 @@
 # État du projet Relève
 
-Mis à jour le 8 novembre 2026. Ce fichier est la passation entre les sessions (Claude Code, agents nocturnes, conversations claude.ai). Mets-le à jour à la fin de chaque session qui change l'état du projet.
+Mis à jour le 8 novembre 2026 (fin de session Claude Code). Ce fichier est la passation entre les sessions (Claude Code, agents nocturnes, conversations claude.ai). Mets-le à jour à la fin de chaque session qui change l'état du projet.
 
 ## Où sont les choses
 
@@ -14,7 +14,7 @@ Mis à jour le 8 novembre 2026. Ce fichier est la passation entre les sessions (
 | Journal des agents | Notion, `collection://629f6e90-382d-455b-ba45-ecc0d1868ff2` |
 | Espace Notion racine | https://app.notion.com/p/40f486abaa2b81a79377f57fbda0944d |
 | Comptes rendus | Slack Alturia AI, canal #releve-agents (`C0CFBJM6DB3`) |
-| Supabase | Organisation Alturia AI (`kufynspyfxcbebbgvrop`). Pas encore de projet `releve` : le forfait gratuit est au maximum (2 projets en pause, OOTI et leadbip). |
+| Supabase | Organisation Alturia AI (`kufynspyfxcbebbgvrop`), projet `releve` (`qgcufrjyactycvkwyfxq`, eu-west-3 Paris), créé le 8 nov. 2026. Identifiants à vérifier dans `CONNECTORS.md` avant toute écriture. |
 | Maquette de référence | `prototype/releve-maquette.html` |
 
 ## Agents nocturnes (tâches planifiées claude.ai, lundi à samedi)
@@ -32,26 +32,45 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 
 - PR #1 (mergée) : squelette Next.js 15 + parcours `/score` complet sans compte. Features « Obtenir mon score seul » et « Voir à quel point mon entreprise repose sur moi » : Livrées.
 - PR #2 (mergée) : Next.js 15.5.7 (CVE-2025-66478), Node 22.x. Vercel bloquait la 15.5.6.
+- PR #3 (mergée) : passation (ce fichier) et consignes Claude Code dans `CLAUDE.md`.
+
+## En cours
+
+- **PR #4 `feat/resultat-email`, prête à merger après la Revue Qualité** : étape A « recevoir son résultat par e-mail ». Testée de bout en bout par Yoann sur la preview le 8 nov. 2026 (e-mail reçu, lien `/r/` fonctionnel, ligne en base). Variables Vercel posées en Preview et Production. Base nettoyée des tests. **Agents : Qualité relit la PR ; Développeur ne reprend pas ce sujet.**
 
 ## Backlog, état au 8 novembre
 
 - **Validée, à spécifier par l'agent Produit** : « Transformer mon score en plan d'actions à 3 ans » (P0), « Repérer les points qui bloqueront une reprise » (P0 ; une version préliminaire des alertes existe déjà dans `lib/score/engine.ts`, à aligner sur la spec).
 - **À valider** : savoir-faire par entretien vocal (P1), pré-audit comptes et contrats (P1), fourchette de valeur de marché (P1), data room au fil de l'eau (P1), vue cabinet / territoire pour prescripteurs (P1), garder le cap pendant la négociation (P2).
 
-## Prochaine étape décidée avec Yoann : recevoir son résultat par e-mail
+## Recevoir son résultat par e-mail
 
 Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée en deux :
 
-**Étape A (à faire maintenant)** : après le résultat, un champ e-mail « Garder ce résultat et le recevoir par e-mail ». À la validation :
-1. Route serveur `POST /api/resultat` : reçoit contexte + réponses + e-mail, recalcule le résultat côté serveur (ne jamais faire confiance au score envoyé par le client), enregistre dans Supabase (table `resultats` : id uuid, token non devinable, email, contexte jsonb, reponses jsonb, score int, indice_dependance int, created_at), envoie un e-mail Resend avec le score, la décote, les 3 actions et le lien `/r/<token>`.
-2. Page `/r/[token]` : affiche le résultat en lecture seule, noindex, « ce lien n'est plus actif » si token inconnu ou révoqué.
-3. Événement analytics `email_submitted`.
-4. Aucune donnée envoyée au serveur avant le clic (critère de la spec).
-5. Variables d'environnement (Vercel) : `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (serveur uniquement), `RESEND_API_KEY`, `RESEND_FROM` (ex. `Relève <onboarding@resend.dev>` tant qu'aucun domaine n'est vérifié : Resend n'envoie alors qu'à l'adresse du compte).
+**Étape A : terminée et validée par Yoann le 8 nov. 2026** (PR #4, à merger) :
+- `POST /api/resultat` (`app/api/resultat/route.ts`) : lien de l’e-mail construit par `lib/resultat/url.ts` (preview → adresse de la branche, production → domaine de production) ; valide e-mail, contexte et 26 réponses (`lib/resultat/validation.ts`), ignore tout score envoyé par le navigateur et recalcule, crée un jeton de 256 bits (`lib/resultat/token.ts`), enregistre dans Supabase, envoie l'e-mail Resend (`lib/resultat/email.ts`). Si l'e-mail échoue, la ligne est supprimée. Champ piège anti-robots.
+- Page `/r/[token]` : résultat en lecture seule (photo figée), noindex, no-referrer, no-store ; « Ce lien n'est plus actif » si jeton inconnu, mal formé ou révoqué.
+- Table `resultats` : migration `supabase/migrations/20261108000000_resultats.sql`, **appliquée le 8 nov. 2026** sur `releve`. Colonnes ajoutées à la spec : `resultat jsonb` (photo figée) et `revoque_le timestamptz`. RLS activée sans politique : seul le serveur (clé secrète) y accède.
+- Supabase et Resend sont appelés par HTTP direct (`lib/resultat/serveur.ts`), sans SDK.
+- `email_submitted` émis après envoi réussi (sans l'adresse). Rien ne part avant le clic.
+- Variables : `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, `RESEND_FROM`, et `SITE_URL` facultative (voir `.env.example`).
+
+**Après le merge de la PR #4** : vérifier en production avec l'adresse du compte Resend, puis supprimer la ligne de test dans `resultats`.
+
+**Décisions du 8 nov. 2026 (Notion, Décisions produit)** : la page `/r/` montre une photo figée du résultat (pas de recalcul) ; aucune dépendance ajoutée à l'étape A (appels HTTP directs).
+
+**Points ouverts, à faire avant les premiers vrais dirigeants** :
+- **Domaine Resend** : les e-mails partent de `onboarding@resend.dev`, arrivent en indésirables et ne peuvent aller qu'à l'adresse du compte Resend. Il faut vérifier un domaine à Relève (à fournir par Yoann).
+- **`releve-staging`** : un second projet Supabase pour les previews. Aujourd'hui, preview et production écrivent dans la même base.
+- **Resend héberge hors de France** (UE/US) : à arbitrer dans une Décision produit au regard du rail « hébergement en France ».
+- Pas de limite d'envois par visiteur hors champ piège (pare-feu Vercel si abus).
 
 **Étape B (feature suivante)** : lien magique Supabase Auth qui rattache le résultat à un compte, historique des scores, lien de partage révocable (spec 2.5 à 2.7).
 
-**Prérequis côté Yoann** : libérer une place Supabase (supprimer OOTI ou leadbip, ou passer en Pro) puis créer le projet `releve` en `eu-west-3` (Paris) ; créer un compte Resend et mettre la clé dans Vercel.
+## Prochaine étape recommandée (à confirmer par Yoann)
+
+- **Avec Yoann dans Claude Code** : étape B (lien magique Supabase Auth, historique des scores, lien de partage révocable, spec 2.5 à 2.7). C'est la fondation du suivi de progression.
+- **Agents nocturnes** : continuer sur les deux P0 du backlog (spec par Produit, puis code par Développeur).
 
 ## Pièges connus
 
@@ -60,3 +79,5 @@ Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée
 - Vercel bloque les versions de Next.js avec une vulnérabilité connue : vérifier les avis de sécurité avant d'épingler une version.
 - Les imports relatifs dans `lib/` portent l'extension `.ts` (nécessaire au test runner natif de Node) ; `tsconfig` a `allowImportingTsExtensions`.
 - Jamais d'`enum` TypeScript dans `lib/` (non supporté par `--experimental-strip-types`).
+- En local, le dépôt est dans `Alturia-workspace/releve/releve/` (dossier imbriqué). Lancer Claude Code depuis ce sous-dossier.
+- `package-lock.json` n'est pas suivi par git (la CI fait `npm install`). Ne pas le commiter sans décision.
