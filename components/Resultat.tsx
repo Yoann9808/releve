@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { Contexte, Reponses, Resultat as ResultatType } from '@/lib/score/engine.ts';
+import {
+  comparerAuHorizon,
+  estAEclaircir,
+  estBloquante,
+  type Alerte,
+  type Contexte,
+  type Reponses,
+  type Resultat as ResultatType,
+} from '@/lib/score/engine.ts';
 import { track } from '@/lib/analytics.ts';
 import { EnregistrerResultat } from './EnregistrerResultat';
 
@@ -21,20 +29,141 @@ function Jauge({ valeur, legende, brass = false }: { valeur: number; legende: st
   );
 }
 
+function titreBloquants(n: number): string {
+  if (n === 1) return 'Le point qui freine le plus la valeur de votre entreprise';
+  return `Les ${n} points qui freinent le plus la valeur de votre entreprise`;
+}
+
+/**
+ * Bloc des alertes à seuil (spec « Repérer les points qui bloqueront une reprise », §2.2 et §3).
+ * `moisRestants` vient de l'horizon du dirigeant (feature Plan à 3 ans) ; absent, seul le délai est affiché.
+ */
+function Alertes({
+  alertes,
+  axesLesPlusFaibles,
+  incoherence,
+  moisRestants,
+  lectureSeule,
+}: {
+  alertes: Alerte[];
+  axesLesPlusFaibles: ResultatType['axesLesPlusFaibles'];
+  incoherence: boolean;
+  moisRestants?: number;
+  lectureSeule: boolean;
+}) {
+  const bloquantes = alertes.filter(estBloquante);
+  const aEclaircir = alertes.filter(estAEclaircir);
+
+  return (
+    <section className="card" aria-labelledby="titre-alertes">
+      <p className="eyebrow">Ce qui freine la valeur</p>
+      {bloquantes.length > 0 ? (
+        <>
+          <h2 id="titre-alertes" style={{ marginTop: 6 }}>
+            {titreBloquants(bloquantes.length)}
+          </h2>
+          {incoherence && (
+            <p className="small muted" style={{ marginTop: 8 }}>
+              Vos réponses sur l’équipe et sur votre présence ne vont pas dans le même sens.
+            </p>
+          )}
+          <div className="list" style={{ marginTop: 14 }}>
+            {bloquantes.map((al) => {
+              const horizon = moisRestants !== undefined ? comparerAuHorizon(al, moisRestants) : null;
+              return (
+                <article key={al.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }} data-alerte={al.id}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span className="pill crit">Bloquant</span>
+                    {horizon?.aLancerMaintenant && <span className="pill warn">À lancer maintenant</span>}
+                    <h3 style={{ margin: 0 }}>{al.titre}</h3>
+                  </div>
+                  <p>{al.fait}</p>
+                  <p className="muted">{al.pourquoi}</p>
+                  <p className="small">
+                    <span className="muted">Délai réaliste pour corriger :</span> {al.delaiTexte}
+                    <span className="muted"> · ordre de grandeur</span>
+                  </p>
+                  {horizon && <p className="small">{horizon.texte}</p>}
+                  <details
+                    onToggle={(e) => {
+                      if (!lectureSeule && (e.currentTarget as HTMLDetailsElement).open)
+                        track('alert_action_opened', { type: al.id });
+                    }}
+                  >
+                    <summary>Par où commencer</summary>
+                    <p>
+                      <b>{al.action.titre}</b> · {al.action.duree}
+                    </p>
+                    {al.action.pourquoi && <p className="muted">{al.action.pourquoi}</p>}
+                    <p className="muted">{al.action.detail}</p>
+                    {al.action.premiereEtape && (
+                      <p>
+                        <span className="muted">Première étape :</span> {al.action.premiereEtape}
+                      </p>
+                    )}
+                  </details>
+                </article>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <>
+          <h2 id="titre-alertes" style={{ marginTop: 6 }}>
+            Aucun point bloquant repéré
+          </h2>
+          {axesLesPlusFaibles.length > 0 && (
+            <p className="muted" style={{ marginTop: 8 }}>
+              Vos deux axes les plus faibles restent{' '}
+              {axesLesPlusFaibles.map((a, i) => (
+                <span key={a.id}>
+                  {i > 0 && ' et '}
+                  <b>{a.nom.toLowerCase()}</b> ({a.score} / 100)
+                </span>
+              ))}
+              . C’est là que votre score progressera le plus vite.
+            </p>
+          )}
+        </>
+      )}
+
+      {aEclaircir.length > 0 && (
+        <div
+          className="list"
+          style={bloquantes.length > 0 ? { marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--line)' } : { marginTop: 14 }}
+        >
+          {aEclaircir.map((al) => (
+            <article key={al.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }} data-alerte={al.id}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span className="pill warn">À éclaircir</span>
+                <h3 style={{ margin: 0 }}>{al.titre}</h3>
+              </div>
+              <p className="muted">{al.question}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 /**
  * Écran de résultat. Sans `onRecommencer` (page /r/<token>), il est en lecture seule :
  * ni formulaire d'enregistrement, ni bouton « Refaire le point », ni événement analytics.
+ * `moisRestants` : temps restant avant l'horizon du dirigeant, quand il est connu (feature Plan à 3 ans).
  */
 export function Resultat({
   resultat,
   contexte,
   reponses,
   onRecommencer,
+  moisRestants,
 }: {
   resultat: ResultatType;
   contexte: Contexte;
   reponses?: Reponses;
   onRecommencer?: () => void;
+  moisRestants?: number;
 }) {
   const { dependance: dep } = resultat;
   const lectureSeule = !onRecommencer;
@@ -42,6 +171,13 @@ export function Resultat({
   useEffect(() => {
     if (!lectureSeule) track('dependency_block_viewed', { indice: dep.indice });
   }, [dep.indice, lectureSeule]);
+
+  useEffect(() => {
+    if (lectureSeule) return;
+    const bloquantes = resultat.alertes.filter(estBloquante);
+    if (bloquantes.length === 0) track('alerts_none');
+    for (const al of bloquantes) track('alert_displayed', { type: al.id, delai: al.delaiTexte });
+  }, [resultat.alertes, lectureSeule]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -91,6 +227,15 @@ export function Resultat({
         )}
       </section>
 
+      {/* Alertes à seuil : après l'indice de dépendance, avant le score global (spec alertes §2.2) */}
+      <Alertes
+        alertes={resultat.alertes}
+        axesLesPlusFaibles={resultat.axesLesPlusFaibles ?? []}
+        incoherence={resultat.incoherenceAlertes}
+        moisRestants={moisRestants}
+        lectureSeule={lectureSeule}
+      />
+
       {/* Score global et axes */}
       <section className="card">
         <div className="hero">
@@ -122,27 +267,6 @@ export function Resultat({
         </div>
       </section>
 
-      {/* Alertes */}
-      {resultat.alertes.length > 0 && (
-        <section className="card">
-          <p className="eyebrow">Les points qui bloqueraient un tiers</p>
-          <div className="list" style={{ marginTop: 14 }}>
-            {resultat.alertes.map((al) => (
-              <div key={al.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span className="pill crit">Bloquant</span>
-                  <b>{al.titre}</b>
-                </div>
-                <p className="muted small">{al.explication}</p>
-                <p className="small">
-                  <span className="muted">Délai pour corriger :</span> {al.delai}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* 3 actions gratuites */}
       <section className="card">
         <p className="eyebrow">Par où commencer</p>
@@ -153,7 +277,13 @@ export function Resultat({
               <summary>
                 {i + 1}. {a.titre} <span className="muted small">· {a.duree}</span>
               </summary>
+              {a.pourquoi && <p className="muted">{a.pourquoi}</p>}
               <p className="muted">{a.detail}</p>
+              {a.premiereEtape && (
+                <p>
+                  <span className="muted">Première étape :</span> {a.premiereEtape}
+                </p>
+              )}
             </details>
           ))}
           {resultat.actions.length === 0 && <p className="muted">Rien à signaler : votre entreprise fonctionne sans vous.</p>}
