@@ -30,6 +30,8 @@ export type Question = {
   id: string;
   axe: AxeId;
   texte: string;
+  /** Formulation pour une activité de services (sans outil de production), si elle diffère. */
+  texteServices?: string;
   /** 3 options, de 0 à 2 points d'autonomie. */
   options: readonly [string, string, string];
   /** Action proposée si cette question obtient la pire réponse. */
@@ -113,15 +115,16 @@ export const QUESTIONS: readonly Question[] = [
 
   // Axe Clients et récurrence (4 questions)
   {
+    // Question de l'alerte A1 (spec « Repérer les points qui bloqueront une reprise », §2.1).
     id: 'cli1',
     axe: 'cli',
-    texte: 'Quelle part du chiffre d’affaires fait votre premier client ?',
-    options: ['Plus de 25 %', 'Entre 10 et 25 %', 'Moins de 10 %'],
+    texte: 'Vos 3 plus gros clients représentent quelle part de votre chiffre d’affaires ?',
+    options: ['Plus de 40 %', 'Entre 20 et 40 %', 'Moins de 20 %'],
     action: {
-      titre: 'Gagner trois nouveaux clients réguliers pour diluer le premier',
+      titre: 'Gagner de nouveaux clients réguliers pour diluer les trois premiers',
       duree: '12 mois',
       detail:
-        'Objectif : aucun client au-dessus de 15 % du chiffre d’affaires. Commencez par les prescripteurs qui vous envoient déjà du travail.',
+        'Objectif : vos trois premiers clients sous 30 % du chiffre d’affaires. Commencez par les prescripteurs qui vous envoient déjà du travail.',
     },
   },
   {
@@ -182,12 +185,14 @@ export const QUESTIONS: readonly Question[] = [
     },
   },
   {
+    // Question de l'alerte A3 (spec « Repérer les points qui bloqueront une reprise », §2.1).
     id: 'fin3',
     axe: 'fin',
-    texte: 'Au cours des trois dernières années, l’investissement dans l’outil de travail a été :',
-    options: ['Arrêté ou réduit au minimum', 'Maintenu au niveau de l’entretien', 'Régulier, avec du renouvellement'],
+    texte: 'Votre dernier investissement significatif (matériel, locaux, logiciels, véhicules) date de :',
+    texteServices: 'Votre dernier investissement significatif (logiciels, site, équipement informatique, locaux) date de :',
+    options: ['Plus de 5 ans, ou jamais', '3 à 5 ans', 'Moins de 3 ans'],
     action: {
-      titre: 'Planifier le renouvellement du matériel le plus ancien',
+      titre: 'Planifier le renouvellement de l’outil de travail le plus ancien',
       duree: '12 mois',
       detail: 'Un outil vieilli se lit immédiatement dans les comptes et sur le terrain. Un plan d’investissement sur trois ans, même modeste, change la lecture.',
     },
@@ -367,6 +372,135 @@ export const PALIERS_DECOTE: readonly { min: number; niveau: string; fourchette:
   { min: 51, niveau: 'forte', fourchette: '15 à 25 %', pctMoyen: 20 },
   { min: 76, niveau: 'très forte', fourchette: '25 à 30 % et plus', pctMoyen: 28 },
 ];
+
+/**
+ * Alertes à seuil (spec « Repérer les points qui bloqueront une reprise », §2.1 et §3).
+ * Les délais de correction sont des fourchettes fixes en mois, en configuration (pas en dur dans le
+ * moteur), affichées comme ordre de grandeur, au même titre que les paliers de décote.
+ */
+export type AlerteId = 'concentration-clients' | 'aucun-relais' | 'outil-vieilli';
+
+export type ActionAlerte = {
+  titre: string;
+  pourquoi: string;
+  duree: string;
+  detail: string;
+  /** Première micro-étape, 15 à 30 minutes (pain « très peu de temps à y consacrer »). */
+  premiereEtape: string;
+};
+
+export type DefinitionAlerte = {
+  id: AlerteId;
+  titre: string;
+  /** Délai réaliste de correction, en mois. */
+  delai: { min: number; max: number };
+  fait: string;
+  pourquoi: string;
+  action: ActionAlerte;
+};
+
+export const ALERTES: Readonly<Record<AlerteId, DefinitionAlerte>> = {
+  'concentration-clients': {
+    id: 'concentration-clients',
+    titre: 'Trois clients font votre chiffre',
+    delai: { min: 18, max: 36 },
+    fait: 'Vos trois plus gros clients représentent plus de 40 % de votre chiffre d’affaires.',
+    pourquoi:
+      'Si l’un d’eux s’en va, l’entreprise vacille. Un lecteur extérieur y voit un risque avant d’y voir un actif, et la valeur en tient compte.',
+    action: {
+      titre: 'Gagner de nouveaux clients réguliers pour diluer les trois premiers',
+      pourquoi: 'Chaque nouveau client régulier réduit le poids des trois premiers et rend le chiffre d’affaires plus solide.',
+      duree: '18 à 36 mois',
+      detail:
+        'Objectif : vos trois premiers clients sous 30 % du chiffre d’affaires. Commencez par les prescripteurs qui vous envoient déjà du travail, puis un contrat annuel aux clients qui reviennent.',
+      premiereEtape: 'Listez vos dix premiers clients avec leur part du chiffre d’affaires de l’an dernier (20 minutes, avec votre dernier bilan).',
+    },
+  },
+  'aucun-relais': {
+    id: 'aucun-relais',
+    titre: 'Personne ne peut tenir la barre sans vous',
+    delai: { min: 12, max: 24 },
+    fait: 'Sans vous pendant trois semaines, l’activité s’arrête ou tourne au ralenti, et personne n’est prêt à vous seconder.',
+    pourquoi:
+      'Tant que l’activité tient à votre présence, sa valeur dépend de vous. Un relais formé est ce qui la rend autonome.',
+    action: {
+      titre: 'Former un second capable de tenir l’activité trois semaines',
+      pourquoi: 'Un second en situation change la lecture de l’entreprise : elle fonctionne, même sans vous.',
+      duree: '12 à 24 mois',
+      detail:
+        'Pas forcément le plus ancien : celui que les autres écoutent. Confiez-lui un domaine entier (planning, achats, relation fournisseurs) avec le droit de décider sans vous demander, puis une semaine d’absence réelle, puis deux, puis trois.',
+      premiereEtape: 'Écrivez le nom de la personne la plus crédible pour vous seconder et le premier domaine que vous lui confiez (15 minutes).',
+    },
+  },
+  'outil-vieilli': {
+    id: 'outil-vieilli',
+    titre: 'L’outil de travail prend de l’âge',
+    delai: { min: 12, max: 36 },
+    fait: 'Votre dernier investissement significatif date de plus de trois ans.',
+    pourquoi:
+      'Un outil vieilli se lit dans les comptes et sur le terrain : il annonce des dépenses à venir et pèse sur la valeur.',
+    action: {
+      titre: 'Planifier le renouvellement de l’outil de travail le plus ancien',
+      pourquoi: 'Un plan d’investissement sur trois ans, même modeste, montre une entreprise entretenue plutôt qu’une entreprise qui s’use.',
+      duree: '12 à 36 mois',
+      detail:
+        'Listez ce qui est le plus ancien, estimez le coût de remplacement avec votre expert-comptable, et étalez les achats sur trois ans.',
+      premiereEtape: 'Notez vos cinq équipements les plus anciens avec leur année d’achat (20 minutes).',
+    },
+  },
+};
+
+/** Variantes de texte selon la situation du dirigeant (spec §3). */
+export const VARIANTES_ALERTES = {
+  /** Dirigeant seul, sans salarié : A2 reformulée, action orientée documentation (prépare le Savoir-faire). */
+  aucunRelaisSeul: {
+    titre: 'Votre activité, c’est vous',
+    fait: 'Vous n’avez pas de salarié : sans vous, l’activité s’arrête.',
+    pourquoi:
+      'Tant que votre savoir-faire n’existe que dans votre tête, l’entreprise n’a pas de valeur en dehors de vous. L’écrire est ce qui lui en donne une.',
+    action: {
+      titre: 'Documenter votre savoir-faire, une fiche à la fois',
+      pourquoi: 'Un savoir-faire écrit peut être transmis, appris et vérifié par quelqu’un d’autre.',
+      duree: '12 à 24 mois',
+      detail:
+        'Une fiche par étape de votre métier, écrite à partir de ce que vous dites en travaillant : du premier contact au règlement. Une fiche par semaine suffit.',
+      premiereEtape: 'Listez les dix gestes ou décisions que vous seul savez faire (15 minutes).',
+    },
+  },
+  /** Co-dirigeants : A2 évaluée hors vous et votre associé(e), comme Q1 à Q3 de l'indice. */
+  aucunRelaisCoDirigeants: {
+    fait: 'Sans vous ni votre associé(e) pendant trois semaines, l’activité s’arrête ou tourne au ralenti, et personne d’autre n’est prêt à prendre le relais.',
+  },
+  /** Activité de services : A3 porte sur les logiciels, le site et l'équipement informatique. */
+  outilVieilliServices: {
+    fait: 'Votre dernier investissement significatif (logiciels, site, équipement informatique) date de plus de trois ans.',
+    pourquoi:
+      'Des outils numériques vieillis se voient de l’extérieur : ils annoncent des dépenses à venir et pèsent sur la valeur.',
+    action: {
+      titre: 'Planifier le renouvellement de vos outils numériques',
+      pourquoi: 'Un plan de mise à niveau sur trois ans, même modeste, montre une entreprise entretenue.',
+      duree: '12 à 36 mois',
+      detail:
+        'Listez logiciels, site et équipement informatique avec leur âge, estimez le coût de mise à niveau, et étalez les achats sur trois ans.',
+      premiereEtape: 'Notez vos cinq outils numériques les plus anciens avec leur année de mise en place (20 minutes).',
+    },
+  },
+} as const;
+
+/** « Je ne sais pas » sur A1 ou A3 : point à éclaircir, avec la question à poser à l'expert-comptable (spec §3). */
+export const QUESTIONS_A_ECLAIRCIR: Readonly<Record<'concentration-clients' | 'outil-vieilli', { titre: string; question: string }>> = {
+  'concentration-clients': {
+    titre: 'La part de vos trois premiers clients est à éclaircir',
+    question: 'Demandez à votre expert-comptable la part de vos trois premiers clients dans le chiffre d’affaires de l’an dernier.',
+  },
+  'outil-vieilli': {
+    titre: 'La date de votre dernier investissement est à éclaircir',
+    question: 'Demandez à votre expert-comptable la date et le montant de votre dernier investissement significatif (tableau des immobilisations).',
+  },
+};
+
+/** Secteurs considérés comme activité de services, sans outil de production (spec §3). */
+export const SECTEURS_SERVICES: readonly string[] = ['Services aux entreprises'];
 
 export const CONTEXTE = {
   secteurs: [

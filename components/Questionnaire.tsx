@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AXES, CONTEXTE, QUESTIONS } from '@/lib/score/content.ts';
-import { calculerResultat, type Contexte, type Reponse, type Reponses } from '@/lib/score/engine.ts';
+import { calculerResultat, estSecteurServices, type Contexte, type Reponse, type Reponses } from '@/lib/score/engine.ts';
 import { ecrireBrouillon, effacerBrouillon, lireBrouillon, stockageDisponible } from '@/lib/score/stockage.ts';
 import { track } from '@/lib/analytics.ts';
 import { Resultat } from './Resultat';
@@ -178,6 +178,7 @@ export function Questionnaire() {
 
   // Étapes 1..26 : une question par écran
   const valeur = reponses[question!.id];
+  const texteQuestion = estSecteurServices(contexte) && question!.texteServices ? question!.texteServices : question!.texte;
   return (
     <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       {reprise && etape > 1 && (
@@ -199,7 +200,7 @@ export function Questionnaire() {
           {axe!.nom} · {indexDansAxe}/{totalAxe}
         </span>
       </div>
-      <h2 id={`q-${question!.id}`}>{question!.texte}</h2>
+      <h2 id={`q-${question!.id}`}>{texteQuestion}</h2>
       <div className="options" role="group" aria-labelledby={`q-${question!.id}`}>
         {question!.options.map((o, k) => (
           <button

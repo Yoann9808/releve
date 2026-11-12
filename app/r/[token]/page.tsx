@@ -14,11 +14,29 @@ export const metadata: Metadata = {
 
 const DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Paris' });
 
+/**
+ * Photo figée (Décision produit du 8 nov. 2026) : on affiche ce qui a été enregistré, sans recalcul.
+ * Les photos prises avant les alertes à seuil (PR #1 à #4) ont des alertes d'un ancien format, sans `niveau` :
+ * elles sont écartées pour que la page reste lisible, le reste de la photo est inchangé.
+ */
+function compatible(r: ResultatEnregistre): ResultatEnregistre {
+  const resultat = r.resultat;
+  return {
+    ...r,
+    resultat: {
+      ...resultat,
+      alertes: (resultat.alertes ?? []).filter((a) => typeof a === 'object' && a !== null && 'niveau' in a),
+      incoherenceAlertes: resultat.incoherenceAlertes ?? false,
+      axesLesPlusFaibles: resultat.axesLesPlusFaibles ?? [],
+    },
+  };
+}
+
 async function charger(token: string): Promise<ResultatEnregistre | null> {
   if (!tokenBienForme(token)) return null;
   try {
     const r = await lireResultat(token);
-    return r && !r.revoque_le ? r : null;
+    return r && !r.revoque_le ? compatible(r) : null;
   } catch (e) {
     console.error('[r/token] lecture', e);
     return null;

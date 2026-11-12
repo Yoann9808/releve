@@ -10,6 +10,9 @@ export type Evenement =
   | 'score_displayed'
   | 'dependency_block_viewed'
   | 'dependency_action_opened'
+  | 'alert_displayed'
+  | 'alert_action_opened'
+  | 'alerts_none'
   | 'email_submitted'
   | 'share_link_created';
 

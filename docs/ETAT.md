@@ -40,7 +40,8 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 
 ## Backlog, état au 8 novembre
 
-- **Validée, à spécifier par l'agent Produit** : « Transformer mon score en plan d'actions à 3 ans » (P0), « Repérer les points qui bloqueront une reprise » (P0 ; une version préliminaire des alertes existe déjà dans `lib/score/engine.ts`, à aligner sur la spec).
+- **Spécifiée** : « Transformer mon score en plan d'actions à 3 ans » (P0, spec du 11 nov. 2026).
+- **En revue** : « Repérer les points qui bloqueront une reprise et le temps qu'il faut pour les corriger » (P0, spec du 11 nov. 2026) : PR `feat/410486ab-alertes-points-bloquants` de l'agent Développeur du 12 nov. 2026. Les questions `cli1` (3 premiers clients, seuil 40 %) et `fin3` (dernier investissement, seuil 3 ans) ont été reformulées en place ; le brouillon local passe en version 2. Le lien avec l'horizon (§2.3) est prêt côté moteur et écran (`moisRestants`), il sera branché par la feature Plan à 3 ans.
 - **À valider** : savoir-faire par entretien vocal (P1), pré-audit comptes et contrats (P1), fourchette de valeur de marché (P1), data room au fil de l'eau (P1), vue cabinet / territoire pour prescripteurs (P1), garder le cap pendant la négociation (P2).
 
 ## Recevoir son résultat par e-mail
