@@ -63,7 +63,7 @@ function Alertes({
             {titreBloquants(bloquantes.length)}
           </h2>
           {incoherence && (
-            <p className="small muted" style={{ marginTop: 8 }}>
+            <p className="muted" style={{ marginTop: 8 }}>
               Vos réponses sur l’équipe et sur votre présence ne vont pas dans le même sens.
             </p>
           )}
@@ -79,11 +79,11 @@ function Alertes({
                   </div>
                   <p>{al.fait}</p>
                   <p className="muted">{al.pourquoi}</p>
-                  <p className="small">
+                  <p>
                     <span className="muted">Délai réaliste pour corriger :</span> {al.delaiTexte}
                     <span className="muted"> · ordre de grandeur</span>
                   </p>
-                  {horizon && <p className="small">{horizon.texte}</p>}
+                  {horizon && <p>{horizon.texte}</p>}
                   <details
                     onToggle={(e) => {
                       if (!lectureSeule && (e.currentTarget as HTMLDetailsElement).open)
