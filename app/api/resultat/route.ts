@@ -1,14 +1,15 @@
 /**
- * POST /api/resultat — « Garder ce résultat et le recevoir par e-mail » (spec §2.5, étape A).
- * Reçoit e-mail + contexte + réponses, recalcule le résultat côté serveur, l'enregistre
- * dans Supabase, puis envoie l'e-mail Resend avec le lien /r/<token>.
+ * POST /api/resultat — « Garder ce résultat » (spec §2.5).
+ * Reçoit e-mail + contexte + réponses, recalcule le résultat côté serveur, l'enregistre dans
+ * Supabase, crée le lien magique (Supabase Auth, compte créé si l'adresse est nouvelle) et envoie
+ * l'e-mail Resend. Le résultat est rattaché au compte au clic sur le lien (adresse prouvée).
  */
 import { NextResponse } from 'next/server';
 import { calculerResultat } from '@/lib/score/engine.ts';
 import { validerDemande } from '@/lib/resultat/validation.ts';
-import { nouveauToken } from '@/lib/resultat/token.ts';
+import { lienConnexion } from '@/lib/compte/lien.ts';
 import { contenuEmail } from '@/lib/resultat/email.ts';
-import { enregistrerResultat, envoyerEmail, supprimerResultat } from '@/lib/resultat/serveur.ts';
+import { creerLienMagique, enregistrerResultat, envoyerEmail, supprimerResultat } from '@/lib/resultat/serveur.ts';
 import { urlDuSite } from '@/lib/resultat/url.ts';
 
 export const runtime = 'nodejs';
@@ -42,12 +43,11 @@ export async function POST(req: Request) {
 
   // Jamais de confiance dans un score envoyé par le navigateur : on recalcule.
   const resultat = calculerResultat(reponses, contexte);
-  const token = nouveauToken();
-  const lien = `${urlDuSite(process.env, new URL(req.url).origin)}/r/${token}`;
+  const base = urlDuSite(process.env, new URL(req.url).origin);
 
+  let id: string;
   try {
-    await enregistrerResultat({
-      token,
+    id = await enregistrerResultat({
       email,
       contexte,
       reponses,
@@ -61,11 +61,12 @@ export async function POST(req: Request) {
   }
 
   try {
-    await envoyerEmail(email, contenuEmail(resultat, lien));
+    const { jeton, type } = await creerLienMagique(email);
+    await envoyerEmail(email, contenuEmail(resultat, lienConnexion(base, jeton, type)));
   } catch (e) {
-    console.error('[api/resultat] envoi', e);
-    // Pas d'e-mail, pas de lien connu : on ne garde pas une ligne orpheline avec l'adresse.
-    await supprimerResultat(token).catch(() => {});
+    console.error('[api/resultat] lien ou envoi', e);
+    // Pas d'e-mail, pas d'accès possible : on ne garde pas une ligne orpheline avec l'adresse.
+    await supprimerResultat(id).catch(() => {});
     return erreur('L’e-mail n’a pas pu partir. Vérifiez votre adresse ou réessayez dans un instant.', 502);
   }
 

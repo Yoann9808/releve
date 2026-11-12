@@ -7,7 +7,7 @@ import { track } from '@/lib/analytics.ts';
 type Etat = { t: 'saisie' } | { t: 'envoi' } | { t: 'envoye'; email: string } | { t: 'erreur'; message: string };
 
 /**
- * « Garder ce résultat et le recevoir par e-mail » (spec §2.5, étape A).
+ * « Garder ce résultat » (spec §2.5) : enregistrement et lien magique vers l'espace.
  * Rien ne part vers le serveur avant le clic sur le bouton.
  */
 export function EnregistrerResultat({ contexte, reponses }: { contexte: Contexte; reponses: Reponses }) {
@@ -43,8 +43,9 @@ export function EnregistrerResultat({ contexte, reponses }: { contexte: Contexte
         <p className="eyebrow">Résultat enregistré</p>
         <h3 style={{ color: '#fff', marginTop: 6 }}>C’est envoyé.</h3>
         <p className="muted" style={{ marginTop: 8 }}>
-          Vous allez recevoir votre résultat à l’adresse <b style={{ color: '#fff' }}>{etat.email}</b>, avec un lien
-          pour le retrouver. Pensez à regarder dans les indésirables si rien n’arrive d’ici quelques minutes.
+          Vous allez recevoir votre résultat à l’adresse <b style={{ color: '#fff' }}>{etat.email}</b>. Cliquez sur
+          le lien de l’e-mail pour ouvrir votre espace : ce résultat y sera conservé, avec les prochains. Pensez à
+          regarder dans les indésirables si rien n’arrive d’ici quelques minutes.
         </p>
       </section>
     );
@@ -53,10 +54,10 @@ export function EnregistrerResultat({ contexte, reponses }: { contexte: Contexte
   return (
     <section className="card ink no-print">
       <p className="eyebrow">Garder ce résultat</p>
-      <h3 style={{ color: '#fff', marginTop: 6 }}>Garder ce résultat et le recevoir par e-mail</h3>
+      <h3 style={{ color: '#fff', marginTop: 6 }}>Garder ce résultat et suivre ma progression</h3>
       <p className="muted" style={{ marginTop: 8 }}>
-        Vous recevrez votre score, vos trois premières actions et un lien personnel pour retrouver ce résultat. Sans
-        mot de passe.
+        Vous recevrez votre score, vos trois premières actions et un lien pour ouvrir votre espace, où vos résultats
+        sont conservés. Sans mot de passe.
       </p>
       <form onSubmit={envoyer} style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }} noValidate>
         <div className="field">
@@ -90,7 +91,7 @@ export function EnregistrerResultat({ contexte, reponses }: { contexte: Contexte
           </button>
         </div>
         <p id="email-resultat-aide" className="muted small">
-          Votre adresse sert uniquement à vous envoyer ce résultat. Vos réponses ne quittent cet appareil qu’au moment
+          Votre adresse sert uniquement à vous envoyer ce résultat et à vous connecter. Vos réponses ne quittent cet appareil qu’au moment
           où vous cliquez.
         </p>
       </form>
