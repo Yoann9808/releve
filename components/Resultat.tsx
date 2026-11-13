@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   comparerAuHorizon,
   estAEclaircir,
@@ -11,7 +11,10 @@ import {
   type Resultat as ResultatType,
 } from '@/lib/score/engine.ts';
 import { track } from '@/lib/analytics.ts';
+import { moisRestants as calculerMoisRestants, type Horizon } from '@/lib/plan/horizon.ts';
+import { ecrireSuivi, lireSuivi, memesReponses, suiviDepuis } from '@/lib/plan/stockage.ts';
 import { EnregistrerResultat } from './EnregistrerResultat';
+import { ChoixHorizon } from './ChoixHorizon';
 
 function Jauge({ valeur, legende, brass = false }: { valeur: number; legende: string; brass?: boolean }) {
   const c = 2 * Math.PI * 52;
@@ -167,6 +170,20 @@ export function Resultat({
 }) {
   const { dependance: dep } = resultat;
   const lectureSeule = !onRecommencer;
+  const [emailEnregistre, setEmailEnregistre] = useState(false);
+  const [horizon, setHorizon] = useState<{ valeur: Horizon; choisiLe: number } | null>(null);
+
+  // Horizon déjà choisi sur cet appareil (spec plan §2.1 : modifiable à tout moment). Score refait :
+  // le plan se recalculera sur ces nouvelles réponses, les actions cochées sont conservées (spec plan §3).
+  useEffect(() => {
+    if (lectureSeule || !reponses) return;
+    const s = lireSuivi();
+    if (!s) return;
+    if (!memesReponses(s.reponses, reponses)) ecrireSuivi(suiviDepuis(contexte, reponses, s.horizon, s.choisiLe, s));
+    setHorizon({ valeur: s.horizon, choisiLe: s.choisiLe });
+  }, [lectureSeule, reponses, contexte]);
+
+  const moisAvantHorizon = horizon ? calculerMoisRestants(horizon.valeur, horizon.choisiLe, Date.now()) : moisRestants;
 
   useEffect(() => {
     if (!lectureSeule) track('dependency_block_viewed', { indice: dep.indice });
@@ -232,7 +249,7 @@ export function Resultat({
         alertes={resultat.alertes}
         axesLesPlusFaibles={resultat.axesLesPlusFaibles ?? []}
         incoherence={resultat.incoherenceAlertes}
-        moisRestants={moisRestants}
+        moisRestants={moisAvantHorizon}
         lectureSeule={lectureSeule}
       />
 
@@ -305,7 +322,19 @@ export function Resultat({
         </section>
       )}
 
-      {!lectureSeule && reponses && <EnregistrerResultat contexte={contexte} reponses={reponses} />}
+      {!lectureSeule && reponses && (
+        <EnregistrerResultat contexte={contexte} reponses={reponses} onEnregistre={() => setEmailEnregistre(true)} />
+      )}
+
+      {/* Horizon et plan à 3 ans : après l'enregistrement du résultat (spec plan §2.1), ou s'il est déjà choisi. */}
+      {!lectureSeule && reponses && (emailEnregistre || horizon) && (
+        <ChoixHorizon
+          contexte={contexte}
+          reponses={reponses}
+          horizon={horizon}
+          onChange={(valeur, choisiLe) => setHorizon({ valeur, choisiLe })}
+        />
+      )}
 
       <div className="q-nav no-print">
         {onRecommencer ? (

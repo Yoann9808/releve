@@ -1,6 +1,6 @@
 # État du projet Relève
 
-Mis à jour le 8 novembre 2026 (fin de session Claude Code). Ce fichier est la passation entre les sessions (Claude Code, agents nocturnes, conversations claude.ai). Mets-le à jour à la fin de chaque session qui change l'état du projet.
+Mis à jour le 13 novembre 2026 (agent Développeur). Ce fichier est la passation entre les sessions (Claude Code, agents nocturnes, conversations claude.ai). Mets-le à jour à la fin de chaque session qui change l'état du projet.
 
 ## Où sont les choses
 
@@ -36,11 +36,12 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 
 ## En cours
 
-- **PR #4 `feat/resultat-email`, prête à merger après la Revue Qualité** : étape A « recevoir son résultat par e-mail ». Testée de bout en bout par Yoann sur la preview le 8 nov. 2026 (e-mail reçu, lien `/r/` fonctionnel, ligne en base). Variables Vercel posées en Preview et Production. Base nettoyée des tests. **Agents : Qualité relit la PR ; Développeur ne reprend pas ce sujet.**
+- **PR #6 `feat/lien-magique` (étape B, ouverte par Yoann le 12 nov. 2026)** : en conflit avec `main` depuis le merge de la PR #5 (`app/r/[token]/page.tsx`), à rebaser par son auteur. L'agent Développeur n'y touche pas.
+- **PR #4 `feat/resultat-email`, mergée le 9 nov. 2026** : étape A « recevoir son résultat par e-mail ». Testée de bout en bout par Yoann sur la preview le 8 nov. 2026 (e-mail reçu, lien `/r/` fonctionnel, ligne en base). Variables Vercel posées en Preview et Production. Base nettoyée des tests. **Agents : Qualité relit la PR ; Développeur ne reprend pas ce sujet.**
 
 ## Backlog, état au 8 novembre
 
-- **Spécifiée** : « Transformer mon score en plan d'actions à 3 ans » (P0, spec du 11 nov. 2026).
+- **En revue** : « Transformer mon score en plan d'actions à 3 ans, avec le temps qu'il me reste affiché » (P0, spec du 11 nov. 2026) : PR `feat/410486ab-plan-3-ans` de l'agent Développeur du 13 nov. 2026, première livraison (horizon, temps restant, catalogue, génération, aperçu gratuit / payant, suivi local). Voir `docs/410486ab-plan-3-ans.md`. Restent pour des PR suivantes : Stripe et la table `abonnements` (prix à décider, spec §7), le rattachement au compte (après la PR #6), l'e-mail trimestriel, le partage du plan.
 - **En revue** : « Repérer les points qui bloqueront une reprise et le temps qu'il faut pour les corriger » (P0, spec du 11 nov. 2026) : PR `feat/410486ab-alertes-points-bloquants` de l'agent Développeur du 12 nov. 2026. Les questions `cli1` (3 premiers clients, seuil 40 %) et `fin3` (dernier investissement, seuil 3 ans) ont été reformulées en place ; le brouillon local passe en version 2. Le lien avec l'horizon (§2.3) est prêt côté moteur et écran (`moisRestants`), il sera branché par la feature Plan à 3 ans.
 - **À valider** : savoir-faire par entretien vocal (P1), pré-audit comptes et contrats (P1), fourchette de valeur de marché (P1), data room au fil de l'eau (P1), vue cabinet / territoire pour prescripteurs (P1), garder le cap pendant la négociation (P2).
 

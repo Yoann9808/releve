@@ -458,6 +458,154 @@ details p {
     grid-template-columns: 1fr;
   }
 }
+/* Plan à 3 ans (spec « Transformer mon score en plan d'actions à 3 ans ») */
+.ligne-temps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ligne-temps .barre {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 14px;
+  align-items: center;
+}
+.ligne-temps .barre .track {
+  grid-column: 1 / -1;
+  height: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ligne-temps .barre .track i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+.ligne-temps .barre .track i.brass {
+  background: var(--brass);
+}
+.ligne-temps .barre .track i.crit {
+  background: var(--crit);
+}
+.pill.good {
+  background: var(--good-soft);
+  color: var(--good);
+}
+.pill.ink {
+  background: var(--ink-soft);
+  color: var(--ink);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 6px 14px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--fg);
+  text-decoration: none;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+.chip[aria-current='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.trimestre {
+  scroll-margin-top: 16px;
+}
+.action {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.action .entete {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.action.faite h3 {
+  color: var(--fg-3);
+  text-decoration: line-through;
+}
+.etapes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.etape {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding: 10px 0;
+  cursor: pointer;
+}
+.etape .duree {
+  font-family: var(--font-mono), Menlo, monospace;
+  font-size: 15px;
+  color: var(--fg-3);
+  white-space: nowrap;
+}
+.etape.faite span:not(.duree) {
+  color: var(--fg-3);
+  text-decoration: line-through;
+}
+.check {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--line-strong);
+  border-radius: 6px;
+  margin: 0;
+  position: relative;
+  cursor: pointer;
+  background: var(--surface);
+  flex: none;
+}
+.check:checked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.check:checked::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 3px;
+  width: 7px;
+  height: 13px;
+  border: solid #fff;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+.flou {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  filter: blur(4px);
+  opacity: 0.6;
+  pointer-events: none;
+  user-select: none;
+}
+.flou i {
+  display: block;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--line-strong);
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
