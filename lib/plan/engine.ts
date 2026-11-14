@@ -208,15 +208,19 @@ export function selectionnerActions(reponses: Reponses, ctx: Contexte = {}): Can
   return out;
 }
 
-/** Ordre final des candidats hors gratuites : mode accéléré (plus courtes d'abord) puis ordre précédent. */
+/**
+ * Ordre final des candidats hors gratuites : l'ordre précédent d'abord (les actions déjà séquencées
+ * gardent leur place, les nouvelles s'ajoutent après), puis, en mode accéléré, les plus courtes
+ * d'abord (spec §3). Le tri par durée est stable : à durée égale, l'ordre précédent est conservé,
+ * mais il ne peut jamais faire passer une action longue devant une action courte.
+ */
 function ordonner(candidats: Candidate[], nbGratuites: number, accelere: boolean, ordrePrecedent?: readonly string[]): Candidate[] {
   const gratuites = candidats.slice(0, nbGratuites);
-  let reste = candidats.slice(nbGratuites).map((c, i) => ({ c, i }));
-  if (accelere) reste = reste.sort((a, b) => a.c.dureeMois - b.c.dureeMois || a.i - b.i);
+  let reste = candidats.slice(nbGratuites);
   if (ordrePrecedent && ordrePrecedent.length > 0) {
     const rang = new Map(ordrePrecedent.map((id, i) => [id, i]));
     reste = reste
-      .map((x, i) => ({ ...x, i }))
+      .map((c, i) => ({ c, i }))
       .sort((a, b) => {
         const ra = rang.get(a.c.id);
         const rb = rang.get(b.c.id);
@@ -224,9 +228,11 @@ function ordonner(candidats: Candidate[], nbGratuites: number, accelere: boolean
         if (ra !== undefined) return -1;
         if (rb !== undefined) return 1;
         return a.i - b.i;
-      });
+      })
+      .map((x) => x.c);
   }
-  return [...gratuites, ...reste.map((x) => x.c)];
+  if (accelere) reste = [...reste].sort((a, b) => a.dureeMois - b.dureeMois);
+  return [...gratuites, ...reste];
 }
 
 /**

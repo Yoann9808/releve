@@ -29,7 +29,8 @@
 - Une action issue d'une alerte dure au moins le délai minimal de l'alerte (ex. 18 mois pour la concentration clients).
 - Pour un dirigeant seul, les trois actions du résultat sont reprises telles quelles (cohérence avec l'écran de résultat) ; le remplacement par de la documentation s'applique aux actions suivantes.
 - Les actions qui ne tiennent pas dans les 12 trimestres sont listées « Après les trois ans », titres seulement.
-- Horizon modifiable depuis `/plan` par une liste déroulante ; chaque changement est un nouveau choix (date remise à aujourd'hui).
+- Horizon modifiable depuis `/plan` par les mêmes boutons que sur le résultat (un clic, pas de liste déroulante) ; chaque changement est un nouveau choix (date remise à aujourd'hui) et re-séquence le plan tout de suite : la règle « pas plus d'une fois par semaine » ne vaut que pour les scores refaits (Revue Qualité du 13 nov. 2026).
+- Le titre de `/plan` reprend l'horizon choisi (« Un an / Deux ans / Trois ans / Cinq ans pour que l'entreprise tourne sans vous ») ; « je ne sais pas encore » affiche trois ans.
 
 ## Comment tester à la main (preview Vercel)
 
@@ -37,7 +38,7 @@
 2. Choisir « Dans 1 an » : le bloc des alertes affiche « Il vous reste environ 12 mois » et « À lancer maintenant » ; cliquer « Voir mon plan à 3 ans ».
 3. Sur `/plan` : ligne de temps, état « Il faut démarrer maintenant » (si une alerte est active), ligne honnête, trimestres. Les trois premières actions ont leurs micro-étapes cochables ; les suivantes sont floutées avec le bloc « Débloquer ».
 4. Cocher une étape, recharger la page : la case reste cochée. « Marquer l'action comme faite » : l'action passe dans « Fait » et le plan se re-séquence.
-5. Modifier l'horizon vers « Dans 5 ans ou plus » : l'état passe à « Vous avez le temps », l'ordre des actions reste celui du premier séquencement (moins de 7 jours).
+5. Modifier l'horizon vers « Dans 5 ans ou plus » : l'état passe à « Vous avez le temps », le titre devient « Cinq ans pour que l'entreprise tourne sans vous ». Revenir à « Dans 1 an » : « Il faut démarrer maintenant » et, après les trois premières, les actions sont classées de la plus courte à la plus longue.
 6. Dans l'onglet Réseau, ouvrir la réponse de `POST /api/plan` : les actions `verrouillee: true` n'ont ni `detail` ni `etapes`.
 7. Refaire le point avec une question en plus au maximum : sur le résultat, l'horizon est déjà connu ; sur `/plan`, l'action correspondante est dans « Archivées », les cases cochées sont conservées.
 8. Dirigeant seul (« Moi seul ») : aucune action de délégation hors des trois premières.

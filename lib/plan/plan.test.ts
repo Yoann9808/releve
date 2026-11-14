@@ -12,9 +12,10 @@ import {
   ETAPE_MINUTES_MIN,
   TRIMESTRES,
 } from './catalogue.ts';
-import { etatDuTemps, MARGE_TEMPS, MOIS_PAR_HORIZON, moisRestants } from './horizon.ts';
+import { etatDuTemps, HORIZONS, MARGE_TEMPS, MOIS_PAR_HORIZON, moisRestants, titreDuPlan } from './horizon.ts';
 import { dureeEnTrimestres, effetAttendu, genererPlan, peutResequencer, selectionnerActions, type Plan } from './engine.ts';
 import { planVisible } from './acces.ts';
+import { suiviDepuis, type SuiviPlan } from './stockage.ts';
 import { validerDemandePlan, validerIds } from './validation.ts';
 
 const toutes = (r: Reponse): Reponses => Object.fromEntries(QUESTIONS.map((q) => [q.id, r]));
@@ -292,6 +293,58 @@ test('ordre précédent : les actions déjà séquencées gardent leur ordre, le
   assert.equal(gratuites.length, 3);
 });
 
+test('horizon raccourci avec un ordre précédent : le mode accéléré met les plus courtes d’abord malgré l’ordre gardé', () => {
+  const lent = plan(toutes(0), { horizon: '5ans' });
+  assert.equal(lent.accelere, false);
+  const ordre = lent.actions.map((a) => a.id);
+  // Le dirigeant passe de 5 ans à 1 an dans la semaine : l'ordre précédent est encore envoyé.
+  const rapide = plan(toutes(0), { horizon: '1an', ordrePrecedent: ordre });
+  assert.equal(rapide.accelere, true);
+  const durees = rapide.actions.filter((a) => !a.gratuite).map((a) => a.dureeMois);
+  for (let i = 1; i < durees.length; i++) assert.ok(durees[i] >= durees[i - 1], `durées croissantes (${durees.join(', ')})`);
+  // Les trois gratuites ne bougent pas.
+  assert.deepEqual(rapide.actions.slice(0, 3).map((a) => a.id), lent.actions.slice(0, 3).map((a) => a.id));
+  // À durée égale, l'ordre précédent est conservé.
+  const parDuree = new Map<number, string[]>();
+  for (const a of rapide.actions.filter((a) => !a.gratuite)) parDuree.set(a.dureeMois, [...(parDuree.get(a.dureeMois) ?? []), a.id]);
+  for (const ids of parDuree.values()) assert.deepEqual(ids, ordre.filter((id) => ids.includes(id)));
+});
+
+test('changer d’horizon remet le séquencement à zéro ; le garder conserve l’ordre précédent', () => {
+  const precedent: SuiviPlan = {
+    version: 1,
+    modifieLe: T0,
+    contexte: {},
+    reponses: toutes(0),
+    horizon: '5ans',
+    choisiLe: T0,
+    faites: ['cli1'],
+    coches: { dep1: [0, 1] },
+    ordre: ['dep1', 'fin1'],
+    actionsConnues: ['dep1', 'fin1', 'cli1'],
+    sequenceLe: T0,
+  };
+  const change = suiviDepuis({}, toutes(0), '1an', T0 + JOUR, precedent);
+  assert.deepEqual(change.ordre, []);
+  assert.equal(change.sequenceLe, null);
+  assert.deepEqual(change.faites, ['cli1']);
+  assert.deepEqual(change.coches, { dep1: [0, 1] });
+  assert.deepEqual(change.actionsConnues, ['dep1', 'fin1', 'cli1']);
+  const meme = suiviDepuis({}, toutes(0), '5ans', T0 + JOUR, precedent);
+  assert.deepEqual(meme.ordre, ['dep1', 'fin1']);
+  assert.equal(meme.sequenceLe, T0);
+  const premier = suiviDepuis({}, toutes(0), '3ans', T0, null);
+  assert.deepEqual(premier.ordre, []);
+  assert.equal(premier.sequenceLe, null);
+});
+
+test('le titre du plan reprend l’horizon choisi', () => {
+  assert.equal(titreDuPlan('1an'), 'Un an pour que l’entreprise tourne sans vous.');
+  assert.equal(titreDuPlan('5ans'), 'Cinq ans pour que l’entreprise tourne sans vous.');
+  assert.equal(titreDuPlan('inconnu'), titreDuPlan('3ans'));
+  for (const h of HORIZONS) assert.ok(titreDuPlan(h).length > 0, h);
+});
+
 test('pas de re-séquencement plus d’une fois par semaine', () => {
   assert.equal(peutResequencer(null, T0), true);
   assert.equal(peutResequencer(T0, T0 + DELAI_RESEQUENCEMENT_MS - 1), false);
@@ -325,7 +378,11 @@ test('sans abonnement : aucune 4e action n’a de détail ni d’étapes ; les t
       assert.equal(a.pourquoi, undefined);
       assert.equal(a.premiereEtape, undefined);
       assert.deepEqual(a.etapes, []);
-      assert.ok(a.titre.length > 0 && a.trimestreDebut !== null || a.trimestreDebut === null);
+      // Une action verrouillée garde ce qui permet de la situer : titre, axe, durée et trimestres.
+      assert.ok(a.titre.length > 0);
+      assert.ok(a.axeNom.length > 0);
+      assert.ok(a.dureeMois >= 1);
+      assert.ok('trimestreDebut' in a && 'trimestreFin' in a);
     }
   }
   // Rien ne fuit dans la sérialisation envoyée au navigateur.

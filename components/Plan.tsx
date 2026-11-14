@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ActionVisible, PlanVisible } from '@/lib/plan/acces.ts';
 import { TRIMESTRES } from '@/lib/plan/catalogue.ts';
 import { peutResequencer } from '@/lib/plan/engine.ts';
-import { HORIZONS, LIBELLES_HORIZON, PHRASE_ACCELERE, TEXTES_ETAT, type Horizon } from '@/lib/plan/horizon.ts';
+import { HORIZONS, LIBELLES_HORIZON, PHRASE_ACCELERE, TEXTES_ETAT, titreDuPlan, type Horizon } from '@/lib/plan/horizon.ts';
 import { ecrireSuivi, lireSuivi, type SuiviPlan } from '@/lib/plan/stockage.ts';
 import { track } from '@/lib/analytics.ts';
 
@@ -15,13 +15,17 @@ type Etat =
   | { t: 'erreur'; message: string }
   | { t: 'pret'; plan: PlanVisible; suivi: SuiviPlan };
 
-const MOIS_COURT = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeric', timeZone: 'Europe/Paris' });
+const MOIS_COURT = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 
-/** « nov. 2026 – janv. 2027 » pour le trimestre n (1 = en cours), compté depuis aujourd'hui. */
+/**
+ * « nov. 2026 – janv. 2027 » pour le trimestre n (1 = en cours), compté depuis aujourd'hui.
+ * Le mois est lu dans le fuseau du dirigeant, puis la date est construite et formatée en UTC :
+ * le 1er du mois ne glisse jamais vers le mois précédent, quel que soit le fuseau (La Réunion, Mayotte).
+ */
 function periodeDuTrimestre(n: number, depuis: number): string {
   const d = new Date(depuis);
-  const debut = new Date(d.getFullYear(), d.getMonth() + (n - 1) * 3, 1);
-  const fin = new Date(d.getFullYear(), d.getMonth() + n * 3 - 1, 1);
+  const debut = Date.UTC(d.getFullYear(), d.getMonth() + (n - 1) * 3, 1);
+  const fin = Date.UTC(d.getFullYear(), d.getMonth() + n * 3 - 1, 1);
   return `${MOIS_COURT.format(debut)} – ${MOIS_COURT.format(fin)}`;
 }
 
@@ -88,7 +92,7 @@ function CarteAction({
           {action.rang}. {action.titre}
         </h3>
       </div>
-      <p className="muted small">
+      <p className="muted">
         {action.axeNom} · {texteDuree(action.dureeMois)}
         {texteTrimestres(action) && <> · {texteTrimestres(action)}</>}
         {action.effet.axe > 0 && (
@@ -239,8 +243,11 @@ export function Plan() {
 
   function changerHorizon(h: Horizon) {
     setModifHorizon(false);
+    if (suivi && h === suivi.horizon) return;
     track('horizon_set', { valeur: h });
-    majSuivi({ horizon: h, choisiLe: Date.now() }, true);
+    // Changer d'horizon est une décision explicite : le plan est re-séquencé tout de suite (spec §3),
+    // sans attendre le délai d'une semaine qui ne vaut que pour les scores refaits.
+    majSuivi({ horizon: h, choisiLe: Date.now(), ordre: [], sequenceLe: null }, true);
   }
 
   const parTrimestre = useMemo(() => {
@@ -298,7 +305,7 @@ export function Plan() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <p className="eyebrow">Plan d’actions</p>
-        <h1>Trois ans pour que l’entreprise tourne sans vous.</h1>
+        <h1>{titreDuPlan(plan.horizon)}</h1>
         <p className="muted">
           Une à deux actions par trimestre, jamais plus de trois en même temps. Chaque action est découpée en
           étapes de 15 à 30 minutes.
@@ -324,7 +331,7 @@ export function Plan() {
         <div className="ligne-temps" style={{ marginTop: 16 }}>
           <div className="barre">
             <span style={{ fontWeight: 500 }}>Aujourd’hui → votre horizon</span>
-            <span className="num muted small">{plan.moisRestants} mois</span>
+            <span className="num muted">{plan.moisRestants} mois</span>
             <div className="track" aria-hidden="true">
               <i style={{ width: `${(plan.moisRestants / maxBarre) * 100}%` }} />
             </div>
@@ -332,7 +339,7 @@ export function Plan() {
           {plan.delaiMax !== null && (
             <div className="barre">
               <span style={{ fontWeight: 500 }}>Le point le plus long à corriger</span>
-              <span className="num muted small">{plan.delaiMax} mois</span>
+              <span className="num muted">{plan.delaiMax} mois</span>
               <div className="track" aria-hidden="true">
                 <i className={plan.etat === 'maintenant' ? 'crit' : 'brass'} style={{ width: `${(plan.delaiMax / maxBarre) * 100}%` }} />
               </div>
@@ -343,23 +350,28 @@ export function Plan() {
         {plan.accelere && <p className="banner" style={{ marginTop: 12 }}>{PHRASE_ACCELERE}</p>}
         <div style={{ marginTop: 16 }}>
           {modifHorizon ? (
-            <div className="field">
-              <label htmlFor="horizon">À quel horizon voulez-vous que l’entreprise tourne sans vous ?</label>
-              <select
-                id="horizon"
-                className="select"
-                value={plan.horizon}
-                onChange={(e) => changerHorizon(e.target.value as Horizon)}
-              >
+            <div>
+              <p id="question-horizon" style={{ fontWeight: 500 }}>
+                À quel horizon voulez-vous que l’entreprise tourne sans vous ?
+              </p>
+              <div className="options" style={{ marginTop: 12 }} role="group" aria-labelledby="question-horizon">
                 {HORIZONS.map((h) => (
-                  <option key={h} value={h}>
+                  <button
+                    key={h}
+                    type="button"
+                    className={`opt${h === 'inconnu' ? ' nsp' : ''}`}
+                    aria-pressed={plan.horizon === h}
+                    onClick={() => changerHorizon(h)}
+                  >
                     {LIBELLES_HORIZON[h]}
-                  </option>
+                  </button>
                 ))}
-              </select>
-              <button className="btn ghost" type="button" onClick={() => setModifHorizon(false)}>
-                Garder {LIBELLES_HORIZON[plan.horizon].toLowerCase()}
-              </button>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <button className="btn ghost" type="button" onClick={() => setModifHorizon(false)}>
+                  Garder {LIBELLES_HORIZON[plan.horizon].toLowerCase()}
+                </button>
+              </div>
             </div>
           ) : (
             <button className="btn ghost no-print" type="button" onClick={() => setModifHorizon(true)}>
@@ -397,7 +409,7 @@ export function Plan() {
             {t.actions.length === 1 ? 'Une action à commencer' : `${t.actions.length} actions à commencer`}
           </h2>
           {t.enCours.length > t.commencent.length && (
-            <p className="muted small" style={{ marginTop: 6 }}>
+            <p className="muted" style={{ marginTop: 6 }}>
               En parallèle, vous poursuivez : {t.enCours.filter((id) => !t.commencent.includes(id)).map((id) => parId.get(id)!.titre).join(' ; ')}.
             </p>
           )}

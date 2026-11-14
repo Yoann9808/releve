@@ -28,6 +28,19 @@ export const LIBELLES_HORIZON: Readonly<Record<Horizon, string>> = {
   inconnu: 'Je ne sais pas encore',
 };
 
+/** Titre de l'écran du plan, repris de l'horizon choisi (« je ne sais pas encore » : l'hypothèse de 3 ans). */
+export const TITRES_PLAN: Readonly<Record<Horizon, string>> = {
+  '1an': 'Un an pour que l’entreprise tourne sans vous.',
+  '2ans': 'Deux ans pour que l’entreprise tourne sans vous.',
+  '3ans': 'Trois ans pour que l’entreprise tourne sans vous.',
+  '5ans': 'Cinq ans pour que l’entreprise tourne sans vous.',
+  inconnu: 'Trois ans pour que l’entreprise tourne sans vous.',
+};
+
+export function titreDuPlan(h: Horizon): string {
+  return TITRES_PLAN[h];
+}
+
 export function estHorizon(v: unknown): v is Horizon {
   return typeof v === 'string' && (HORIZONS as readonly string[]).includes(v);
 }

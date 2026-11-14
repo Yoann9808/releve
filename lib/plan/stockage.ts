@@ -56,7 +56,13 @@ export function effacerSuivi(): void {
   }
 }
 
-/** Nouveau suivi à partir d'un résultat et d'un horizon ; conserve les cases cochées d'un suivi précédent. */
+/**
+ * Nouveau suivi à partir d'un résultat et d'un horizon ; conserve les cases cochées d'un suivi précédent.
+ * Un changement d'horizon est une décision explicite du dirigeant : l'ordre précédent et la date du
+ * dernier séquencement sont remis à zéro pour que le plan soit re-séquencé tout de suite (spec §3,
+ * mode accéléré « plus courtes d'abord »). La règle « pas plus d'une fois par semaine » ne vaut que
+ * pour les scores refaits.
+ */
 export function suiviDepuis(
   contexte: Contexte,
   reponses: Reponses,
@@ -64,6 +70,7 @@ export function suiviDepuis(
   choisiLe: number,
   precedent: SuiviPlan | null,
 ): Omit<SuiviPlan, 'version' | 'modifieLe'> {
+  const memeHorizon = precedent !== null && precedent.horizon === horizon;
   return {
     contexte,
     reponses,
@@ -71,9 +78,9 @@ export function suiviDepuis(
     choisiLe,
     faites: precedent?.faites ?? [],
     coches: precedent?.coches ?? {},
-    ordre: precedent?.ordre ?? [],
+    ordre: memeHorizon ? precedent.ordre : [],
     actionsConnues: precedent?.actionsConnues ?? [],
-    sequenceLe: precedent?.sequenceLe ?? null,
+    sequenceLe: memeHorizon ? precedent.sequenceLe : null,
   };
 }
 
