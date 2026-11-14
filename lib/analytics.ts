@@ -14,7 +14,12 @@ export type Evenement =
   | 'alert_action_opened'
   | 'alerts_none'
   | 'email_submitted'
-  | 'share_link_created';
+  | 'share_link_created'
+  | 'horizon_set'
+  | 'plan_viewed'
+  | 'paywall_viewed'
+  | 'checkout_started'
+  | 'action_step_done';
 
 type Proprietes = Record<string, string | number | boolean>;
 
