@@ -31,7 +31,7 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 ## Livré
 
 - PR #4 (mergée le 9 nov. 2026) : étape A « recevoir son résultat par e-mail », testée de bout en bout par Yoann sur la preview le 8 nov. 2026. Variables Vercel posées en Preview et Production. Base nettoyée des tests.
-- PR #5 (mergée le 13 nov. 2026) : alertes à seuil sur les points qui bloqueront une reprise, avec délai réaliste. Feature « Repérer les points… » : Livrée.
+- PR #5 (mergée le 12 nov. 2026) : alertes à seuil sur les points qui bloqueront une reprise, avec délai réaliste. Feature « Repérer les points… » : Livrée.
 - PR #1 (mergée) : squelette Next.js 15 + parcours `/score` complet sans compte. Features « Obtenir mon score seul » et « Voir à quel point mon entreprise repose sur moi » : Livrées.
 - PR #2 (mergée) : Next.js 15.5.7 (CVE-2025-66478), Node 22.x. Vercel bloquait la 15.5.6.
 - PR #3 (mergée) : passation (ce fichier) et consignes Claude Code dans `CLAUDE.md`.
@@ -44,7 +44,7 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 ## Backlog, état au 14 novembre
 
 - **En revue** : « Transformer mon score en plan d'actions à 3 ans, avec le temps qu'il me reste affiché » (P0, spec du 11 nov. 2026) : PR `feat/410486ab-plan-3-ans` de l'agent Développeur du 13 nov. 2026, première livraison (horizon, temps restant, catalogue, génération, aperçu gratuit / payant, suivi local). Voir `docs/410486ab-plan-3-ans.md`. Restent pour des PR suivantes : Stripe et la table `abonnements` (prix à décider, spec §7), le rattachement au compte (après la PR #6), l'e-mail trimestriel, le partage du plan.
-- **Livrée** (PR #5 mergée le 13 nov. 2026) : « Repérer les points qui bloqueront une reprise et le temps qu'il faut pour les corriger » (P0, spec du 11 nov. 2026), PR `feat/410486ab-alertes-points-bloquants` de l'agent Développeur du 12 nov. 2026. Les questions `cli1` (3 premiers clients, seuil 40 %) et `fin3` (dernier investissement, seuil 3 ans) ont été reformulées en place ; le brouillon local passe en version 2. Le lien avec l'horizon (§2.3) est prêt côté moteur et écran (`moisRestants`), il sera branché par la feature Plan à 3 ans.
+- **Livrée** (PR #5 mergée le 12 nov. 2026) : « Repérer les points qui bloqueront une reprise et le temps qu'il faut pour les corriger » (P0, spec du 11 nov. 2026), PR `feat/410486ab-alertes-points-bloquants` de l'agent Développeur du 12 nov. 2026. Les questions `cli1` (3 premiers clients, seuil 40 %) et `fin3` (dernier investissement, seuil 3 ans) ont été reformulées en place ; le brouillon local passe en version 2. Le lien avec l'horizon (§2.3) est prêt côté moteur et écran (`moisRestants`), il sera branché par la feature Plan à 3 ans.
 - **À valider** : savoir-faire par entretien vocal (P1), pré-audit comptes et contrats (P1), fourchette de valeur de marché (P1), data room au fil de l'eau (P1), vue cabinet / territoire pour prescripteurs (P1), garder le cap pendant la négociation (P2).
 
 ## Recevoir son résultat par e-mail
