@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
       {
+        // Le plan et son API : jamais indexés, jamais mis en cache partagé.
+        source: '/plan/:path*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Cache-Control', value: 'private, no-store' },
+        ],
+      },
+      {
         // Résultat enregistré : jamais indexé, jamais mis en cache partagé, le jeton ne fuit pas en Referer.
         source: '/r/:path*',
         headers: [

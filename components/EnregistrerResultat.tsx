@@ -10,7 +10,16 @@ type Etat = { t: 'saisie' } | { t: 'envoi' } | { t: 'envoye'; email: string } | 
  * « Garder ce résultat et le recevoir par e-mail » (spec §2.5, étape A).
  * Rien ne part vers le serveur avant le clic sur le bouton.
  */
-export function EnregistrerResultat({ contexte, reponses }: { contexte: Contexte; reponses: Reponses }) {
+export function EnregistrerResultat({
+  contexte,
+  reponses,
+  onEnregistre,
+}: {
+  contexte: Contexte;
+  reponses: Reponses;
+  /** Appelé une fois l'e-mail parti : la question d'horizon (plan à 3 ans) vient ensuite. */
+  onEnregistre?: () => void;
+}) {
   const [email, setEmail] = useState('');
   const [site, setSite] = useState(''); // champ piège, invisible pour un humain
   const [etat, setEtat] = useState<Etat>({ t: 'saisie' });
@@ -32,6 +41,7 @@ export function EnregistrerResultat({ contexte, reponses }: { contexte: Contexte
       }
       track('email_submitted');
       setEtat({ t: 'envoye', email: email.trim() });
+      onEnregistre?.();
     } catch {
       setEtat({ t: 'erreur', message: 'La connexion a échoué. Vérifiez votre accès à internet et réessayez.' });
     }

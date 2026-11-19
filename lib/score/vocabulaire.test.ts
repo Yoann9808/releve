@@ -1,7 +1,8 @@
 /**
- * Critère d'acceptation (spec « Obtenir mon score seul », §4) :
+ * Critère d'acceptation (spec « Obtenir mon score seul », §4, repris par la spec du plan à 3 ans, §4) :
  * les mots « vente », « cession », « retraite », « départ », « repreneur » n'apparaissent
- * dans aucun écran du parcours. On vérifie le contenu du questionnaire et les textes de l'app.
+ * dans aucun écran du parcours, ni dans le plan. On vérifie le contenu du questionnaire, le catalogue
+ * d'actions et les textes de l'app.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,6 +29,9 @@ test('aucun mot lié à la vente dans le questionnaire ni dans les écrans', () 
     join(racine, 'app', 'score'),
     join(racine, 'app', 'r'),
     join(racine, 'app', 'api', 'resultat'),
+    join(racine, 'app', 'plan'),
+    join(racine, 'app', 'api', 'plan'),
+    join(racine, 'lib', 'plan'),
     join(racine, 'components'),
   ];
   const fautes: string[] = [];
