@@ -1,6 +1,6 @@
 # État du projet Relève
 
-Mis à jour le 14 novembre 2026 (agent Développeur). Ce fichier est la passation entre les sessions (Claude Code, agents nocturnes, conversations claude.ai). Mets-le à jour à la fin de chaque session qui change l'état du projet.
+Mis à jour le 21 novembre 2026 (agent Développeur). Ce fichier est la passation entre les sessions (Claude Code, agents nocturnes, conversations claude.ai). Mets-le à jour à la fin de chaque session qui change l'état du projet.
 
 ## Où sont les choses
 
@@ -30,6 +30,7 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 
 ## Livré
 
+- PR #7 (mergée le 19 nov. 2026) : première livraison du plan d'actions à 3 ans (horizon, temps restant, catalogue de 26 actions, séquencement sur 12 trimestres, aperçu gratuit / payant filtré côté serveur, suivi sur l'appareil). Voir `docs/410486ab-plan-3-ans.md`. Restent pour des PR suivantes : Stripe et la table `abonnements` (prix à décider, spec §7), le rattachement au compte (après la PR #6), l'e-mail trimestriel, le partage du plan.
 - PR #4 (mergée le 9 nov. 2026) : étape A « recevoir son résultat par e-mail », testée de bout en bout par Yoann sur la preview le 8 nov. 2026. Variables Vercel posées en Preview et Production. Base nettoyée des tests.
 - PR #5 (mergée le 12 nov. 2026) : alertes à seuil sur les points qui bloqueront une reprise, avec délai réaliste. Feature « Repérer les points… » : Livrée.
 - PR #1 (mergée) : squelette Next.js 15 + parcours `/score` complet sans compte. Features « Obtenir mon score seul » et « Voir à quel point mon entreprise repose sur moi » : Livrées.
@@ -38,14 +39,15 @@ Yoann : 20 minutes à 8h05 (agenda). Lit Slack, merge les PR PRÊT À MERGER, va
 
 ## En cours
 
-- **PR #6 `feat/lien-magique` (étape B, ouverte par Yoann le 12 nov. 2026)** : en conflit avec `main` depuis le merge de la PR #5 (`app/r/[token]/page.tsx`), à rebaser par son auteur. L'agent Développeur n'y touche pas.
-- **PR #7 `feat/410486ab-plan-3-ans` (agent Développeur, 13 nov. 2026)** : première livraison du plan à 3 ans. Revue Qualité du 13 nov. « À CORRIGER » traitée le 14 nov. (mode accéléré au changement d'horizon, 18 px, boutons d'horizon, périodes en UTC, titre selon l'horizon, test tautologique). En attente de la Revue Qualité suivante puis du merge par Yoann.
+- **PR #6 `feat/lien-magique` (étape B, ouverte par Yoann le 12 nov. 2026)** : Revue Qualité du 13 nov. « À CORRIGER » (migration `20261109000000_comptes_partages` à appliquer avant le merge, rattachement des résultats limité au résultat créé dans la même requête, 5 écarts), toujours en conflit avec `main` (`app/r/[token]/page.tsx`), à rebaser par son auteur. L'agent Développeur n'y touche pas. Elle bloque le rattachement du plan au compte, le suivi trimestriel et le partage du plan.
+- **Aucune PR de l'agent Développeur ouverte.** Le pipeline est à sec depuis le 17 nov. : aucune feature « Spécifiée » dans le backlog (cinq nuits de suite au 21 nov.). Les agents Développeur et Qualité tournent à vide tant qu'aucune feature « À valider » ne passe en « Validée » (l'agent Produit la spécifie le matin suivant).
 
-## Backlog, état au 14 novembre
+## Backlog, état au 21 novembre
 
-- **En revue** : « Transformer mon score en plan d'actions à 3 ans, avec le temps qu'il me reste affiché » (P0, spec du 11 nov. 2026) : PR `feat/410486ab-plan-3-ans` de l'agent Développeur du 13 nov. 2026, première livraison (horizon, temps restant, catalogue, génération, aperçu gratuit / payant, suivi local). Voir `docs/410486ab-plan-3-ans.md`. Restent pour des PR suivantes : Stripe et la table `abonnements` (prix à décider, spec §7), le rattachement au compte (après la PR #6), l'e-mail trimestriel, le partage du plan.
+- **En revue** : « Transformer mon score en plan d'actions à 3 ans, avec le temps qu'il me reste affiché » (P0, spec du 11 nov. 2026) : PR #7 mergée le 19 nov. 2026, périmètre partiel (voir « Livré »). Statut Notion à trancher par Yoann : passer en « Livrée » et créer des features de suite pour Stripe, le suivi trimestriel et le partage, ou la garder « En revue » jusqu'à la livraison complète. Les décisions prises par l'agent dans `docs/410486ab-plan-3-ans.md` sont à confirmer ou à inscrire dans Décisions produit.
+- **Prix et périodicité de l'abonnement** (spec Plan §7) : aucune Décision produit. Nécessaire avant toute PR Stripe.
 - **Livrée** (PR #5 mergée le 12 nov. 2026) : « Repérer les points qui bloqueront une reprise et le temps qu'il faut pour les corriger » (P0, spec du 11 nov. 2026), PR `feat/410486ab-alertes-points-bloquants` de l'agent Développeur du 12 nov. 2026. Les questions `cli1` (3 premiers clients, seuil 40 %) et `fin3` (dernier investissement, seuil 3 ans) ont été reformulées en place ; le brouillon local passe en version 2. Le lien avec l'horizon (§2.3) est prêt côté moteur et écran (`moisRestants`), il sera branché par la feature Plan à 3 ans.
-- **À valider** : savoir-faire par entretien vocal (P1), pré-audit comptes et contrats (P1), fourchette de valeur de marché (P1), data room au fil de l'eau (P1), vue cabinet / territoire pour prescripteurs (P1), garder le cap pendant la négociation (P2).
+- **À valider** : 19 features (12 P1, 7 P2), aucune passée en « Validée » depuis plusieurs runs de l'agent Produit. Les trois mieux placées au RICE : « Voir le résultat réel de mon entreprise une fois mon travail payé à son prix » (10,7), « Connaître la fourchette de valeur de marché de mon entreprise » (10), « Voir, pour chaque alerte de mon score, un cas réel où ce point a fait échouer une reprise » (8). Les deux premières enrichissent le résultat gratuit du score.
 
 ## Recevoir son résultat par e-mail
 
@@ -74,7 +76,7 @@ Correspond à la section 2.5 de la spec « Obtenir mon score seul ». Découpée
 ## Prochaine étape recommandée (à confirmer par Yoann)
 
 - **Avec Yoann dans Claude Code** : étape B (lien magique Supabase Auth, historique des scores, lien de partage révocable, spec 2.5 à 2.7). C'est la fondation du suivi de progression.
-- **Agents nocturnes** : continuer sur les deux P0 du backlog (spec par Produit, puis code par Développeur).
+- **Agents nocturnes** : les quatre P0 sont livrés ou en revue. Pour que la chaîne Produit → Développeur → Qualité reprenne, passer en « Validée » les features P1 à construire ensuite ; sinon les agents continueront de tourner à vide.
 
 ## Pièges connus
 

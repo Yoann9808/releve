@@ -13,7 +13,7 @@ Le cockpit de transmissibilité des TPE. Relève mesure et fait grandir la valeu
 | Obtenir mon score seul, en 20 minutes, sans compte | Parcours complet, sans enregistrement | `/score` |
 | Voir à quel point mon entreprise repose sur moi et la décote | Livrée dans le résultat | `lib/score/engine.ts` |
 | Repérer les points qui bloqueront une reprise et le temps qu'il faut pour les corriger | Alertes à seuil A1/A2/A3 avec délai réaliste et action (en revue) | `lib/score/engine.ts`, `components/Resultat.tsx` |
-| Transformer mon score en plan d'actions à 3 ans, avec le temps qu'il me reste affiché | Horizon, temps restant, plan séquencé sur 12 trimestres, 3 actions ouvertes, aperçu du reste (en revue ; paiement et suivi trimestriel à venir) | `lib/plan/`, `components/Plan.tsx`, `/plan` |
+| Transformer mon score en plan d'actions à 3 ans, avec le temps qu'il me reste affiché | Horizon, temps restant, plan séquencé sur 12 trimestres, 3 actions ouvertes, aperçu du reste (première livraison mergée le 19 nov. 2026 ; paiement, compte, suivi trimestriel et partage à venir) | `lib/plan/`, `components/Plan.tsx`, `/plan` |
 | Enregistrement par e-mail (lien magique), partage | À venir | — |
 
 ## Contenu du dépôt
