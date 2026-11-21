@@ -13,7 +13,7 @@ Mis à jour le 21 novembre 2026 (agent Développeur). Ce fichier est la passatio
 | Décisions produit | Notion, `collection://9183ab81-27a3-469f-ad47-eddbaf5d693c` · https://app.notion.com/p/c17dd22f45444caaa6229be3367084fd |
 | Journal des agents | Notion, `collection://629f6e90-382d-455b-ba45-ecc0d1868ff2` |
 | Espace Notion racine | https://app.notion.com/p/40f486abaa2b81a79377f57fbda0944d |
-| Comptes rendus | Slack Alturia AI, canal #releve-agents (`C0CFBJM6DB3`) |
+| Comptes rendus | Slack Alturia AI, canal #releve-agents (`C0CF9CHFXHQ` ; l'identifiant `C0CFBJM6DB3` encore présent dans certains prompts d'agents est faux) |
 | Supabase | Organisation Alturia AI (`kufynspyfxcbebbgvrop`), projet `releve` (`qgcufrjyactycvkwyfxq`, eu-west-3 Paris), créé le 8 nov. 2026. Identifiants à vérifier dans `CONNECTORS.md` avant toute écriture. |
 | Maquette de référence | `prototype/releve-maquette.html` |
 
